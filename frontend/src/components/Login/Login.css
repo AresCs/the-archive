@@ -1,149 +1,167 @@
-/* Reset & Base Layout */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* =========================
+   Login.css (FULL)
+   - centered title + card
+   - stable palette (scoped)
+   - eyes as PNGs
+   ========================= */
+
+:root {
+  --hack: #00e2a6;
+  --hack-soft: #7afcd0;
+  --panel: #0b0f10;
+  --panel2: #0a0a0a;
+  --accent: #0b94b9;
+  --font: "VT323", monospace;
 }
 
-html, body {
-  height: 100%;
-  width: 100%;
-  font-family: "VT323", monospace;
-  background: black;
-  color: #777;
-  overflow: hidden;
-  overflow-x: hidden; 
-  overflow-y: auto;
-}
+/* canvas */
+html, body, #root { height: 100%; margin: 0; background: #000; }
+body { color: var(--hack); font-family: var(--font); }
 
-.screen-wrapper {
+/* wrapper to center content */
+.login-viewport {
   position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 100vw;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1100;
+  opacity: 0;
+  transition: opacity 600ms ease;
+  pointer-events: none;
+}
+.login-viewport.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* title */
+.login-title.glitch {
+  position: fixed;
+  top: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  color: var(--hack);
+  text-shadow: 0 0 10px rgba(0,226,166,0.55);
+  letter-spacing: 0.06em;
+  font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+  pointer-events: none;
+
+  opacity: 0;
+  filter: blur(6px);
+}
+.login-viewport.is-visible .login-title.glitch {
+  animation: titleIn 700ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes titleIn {
+  0%   { opacity: 0; transform: translate(-50%, -6px); filter: blur(6px); }
+  60%  { opacity: 1; transform: translate(-50%, 0);    filter: blur(0); }
+  100% { opacity: 1; transform: translate(-50%, 0);    filter: blur(0); }
+}
+
+/* card */
+.login-card {
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  background: linear-gradient(180deg, var(--panel), var(--panel2));
+  border: 1px solid rgba(0, 226, 166, 0.35);
+  border-radius: 14px;
+  padding: 1.2rem 1.2rem 1.3rem;
+  box-shadow: 0 0 18px rgba(0,226,166,0.25);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  gap: 0.75rem;
+
   opacity: 0;
-  transition: opacity 1s ease;
+  transform: translateY(8px) scale(.98);
+  filter: blur(10px);
 }
-
-.screen-wrapper.visible {
-  opacity: 1;
+.login-viewport.is-visible .login-card {
+  animation: cardIn 650ms 120ms cubic-bezier(.2,.8,.2,1) forwards;
 }
-
-/* Background animation layer */
-.animation-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: url("/images/dark_forest.gif") no-repeat center center/cover;
-  animation: fadeOut 6s forwards;
-  z-index: 10;
-}
-
-@keyframes fadeOut {
-  0% { opacity: 1; }
-  90% { opacity: 0.2; }
-  100% { opacity: 0; display: none; }
-}
-
-/* Title */
-.glitch {
-  font-size: 3rem;
-  color: #444;
-  text-shadow: 2px 2px 5px rgba(50, 50, 50, 0.8);
-  animation: flicker 5s forwards 4s;
-}
-
-@keyframes flicker {
-  0% { opacity: 0; }
-  30% { opacity: 1; }
-  60% { opacity: 0.6; }
-  90% { opacity: 1; text-shadow: 0px 0px 10px #222; }
-  100% { opacity: 1; }
-}
-
-/* Login Box */
-.login-container {
-  background: rgba(10, 10, 10, 0.85);
-  padding: 2rem;
-  border: 2px solid #222;
-  box-shadow: 0px 0px 10px #111;
-  max-width: 400px;
-  width: 90%;
-  margin-top: 1.5rem;
+@keyframes cardIn {
+  0%   { opacity: 0; transform: translateY(8px) scale(.98); filter: blur(10px); }
+  70%  { opacity: 1; transform: translateY(0)    scale(1.0); filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0)    scale(1.0); filter: blur(0); }
 }
 
 .login-subtitle {
-  color: cyan;
-  margin-bottom: 1rem;
-  margin-top: 0.5rem;
-  font-size: 1.3rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--hack);
   text-align: center;
+  text-shadow: 0 0 6px rgba(0,226,166,0.35);
+  font-size: 1.25rem;
 }
 
-
-/* Inputs and Button */
-input, button {
-  display: block;
+/* inputs */
+.login-card input {
   width: 100%;
-  margin: 1rem 0;
-  padding: 0.75rem;
-  font-size: 1.2rem;
-  border: 1px solid #222;
-  background: black;
-  color: #666;
+  background: #0f1315;
+  border: 1px solid rgba(0,226,166,0.7);
+  border-radius: 8px;
+  color: var(--hack);
+  padding: 0.9rem 0.9rem;
+  font-size: 1.05rem;
+  outline: none;
+  box-sizing: border-box;
 }
+.login-card input::placeholder { color: #7aa3a3; }
 
-button {
+/* button (no animations; full opacity) */
+.login-card button {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 1.05rem;
   cursor: pointer;
-  transition: 0.3s;
-  opacity: 0;
-  animation: fadeInButton 3s forwards 8s;
+  opacity: 1;
+  transition: none;
+  box-shadow: none;
+}
+.login-card button:hover,
+.login-card button:focus {
+  background: var(--accent);
+  color: #fff;
+  opacity: 1;
+  outline: none;
 }
 
-button:hover {
-  background: #222;
-  color: white;
-  border-color: white;
-  box-shadow: 0px 0px 15px #333;
-}
+/* error */
+.login-error { color: #ff6b6b; margin: 0.25rem 0 0; text-align: center; }
 
-@keyframes fadeInButton {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Mist Layer */
-.mist {
+/* Eyes layer + png eyes */
+.eyes-layer {
   position: fixed;
-  width: 150%;
-  height: 150%;
-  top: -25%;
-  left: -25%;
-  background: url("/images/mist_texture.png") no-repeat center;
-  background-size: cover;
-  opacity: 0.08;
-  filter: blur(8px);
-  z-index: -1;
-  animation: mistMove 40s linear infinite alternate;
-}
-
-@keyframes mistMove {
-  0% { transform: translate(0px, 0px) scale(1.1); }
-  100% { transform: translate(40px, -40px) scale(1.2); }
-}
-
-/* Eyes */
-.eyes {
-  position: fixed;
-  width: 50px;
-  height: auto;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1050;
   opacity: 0;
-  transition: opacity 1s ease-in-out;
+  transition: opacity 500ms ease;
+}
+.eyes-layer.active { opacity: 1; }
+
+/* ✅ Keep aspect ratio; size by height; no halo glow */
+.shadow-eye {
+  position: absolute;
+  height: 42px;     /* control size by height */
+  width: auto;      /* preserve PNG aspect ratio */
+  opacity: 0;
+  transition: opacity 280ms ease, transform 280ms ease;
+  pointer-events: none;
+  image-rendering: auto;      /* avoid pixelation/alias */
+  filter: none;               /* remove drop-shadow halo */
+  will-change: transform, opacity;
+}
+
+.shadow-eye.in {
+  opacity: 0.85;
+}
+
+
+@media (max-width: 520px) {
+  .login-title.glitch { top: 5vh; font-size: 2rem; }
+  .login-card { width: 92vw; padding: 1rem; }
 }

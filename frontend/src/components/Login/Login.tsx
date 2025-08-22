@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
+import HackyAnimation from "./HackyAnimation";
 import { api } from "../../lib/api";
 import type { Agent } from "../../types";
 
@@ -15,112 +16,130 @@ export default function Login({ onLogin }: Props) {
   const [showLogin, setShowLogin] = useState(false);
   const navigate = useNavigate();
 
-  // Delay login UI appearance
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setShowLogin(true);
-    }, 7500);
-    return () => clearTimeout(timeout);
-  }, []);
+  // Eyes layer
+  const eyesLayerRef = useRef<HTMLDivElement | null>(null);
+  const spawnTimerRef = useRef<number | null>(null);
 
-  // Random “eyes” animation
+  // After hack windows finish, show the login UI
+  const HACK_DURATION_MS = 22000;
+
+  // Spawn “shadow eyes” PNGs after login is visible
   useEffect(() => {
-    const eyeImages = [
-      "/images/eye1.png",
-      "/images/eye2.png",
-      "/images/eye3.png",
-      "/images/eye4.png",
-      "/images/eye1.gif",
+    if (!showLogin) return;
+
+    type EyeElement = HTMLImageElement & {
+      __removeTimer?: number;
+      __fadeTimer?: number;
+    };
+
+    const layer = eyesLayerRef.current;
+    if (!layer) return;
+
+    const eyeSrcs = [
+      "/images/login/eyes/eye1.png",
+      "/images/login/eyes/eye2.png",
+      "/images/login/eyes/eye3.png",
+      "/images/login/eyes/eye4.png",
     ];
 
-    interface EyeElement extends HTMLImageElement {
-      __fadeIn?: number;
-      __fadeOut?: number;
-      __removeTimer?: number;
-    }
+    let destroyed = false;
 
-    function createRandomEyes() {
-      const numEyes = Math.floor(Math.random() * 4) + 2;
+    const spawnOne = () => {
+      if (destroyed) return;
 
-      for (let i = 0; i < numEyes; i++) {
-        const eye = document.createElement("img") as EyeElement;
-        eye.src = eyeImages[Math.floor(Math.random() * eyeImages.length)];
-        eye.classList.add("eyes");
-        document.body.appendChild(eye);
+      const loginBox = document.getElementById("login-area");
+      const titleEl =
+        (document.querySelector(".login-title.glitch") as HTMLElement | null) ??
+        null;
 
-        const loginBox = document.getElementById("login-area");
-        const loginRect = loginBox?.getBoundingClientRect();
+      const safeRects: DOMRect[] = [];
+      if (loginBox) safeRects.push(loginBox.getBoundingClientRect());
+      if (titleEl) safeRects.push(titleEl.getBoundingClientRect());
 
-        let x = 0,
-          y = 0,
-          isOverlapping = true;
+      const img = document.createElement("img") as EyeElement;
+      img.src = eyeSrcs[Math.floor(Math.random() * eyeSrcs.length)];
+      img.className = "shadow-eye";
 
-        while (isOverlapping) {
-          x = Math.random() * (window.innerWidth - 100);
-          y = Math.random() * (window.innerHeight - 100);
+      // find a safe random spot
+      const pad = 50;
+      let x = 0;
+      let y = 0;
+      let ok = false;
+      const w = 120;
+      const h = 40;
 
-          if (
-            !loginRect ||
-            x + 50 < loginRect.left ||
-            x > loginRect.right ||
-            y + 50 < loginRect.top ||
-            y > loginRect.bottom
-          ) {
-            isOverlapping = false;
-          }
-        }
+      for (let tries = 0; tries < 60 && !ok; tries++) {
+        x = Math.random() * (window.innerWidth - (w + 20)) + 10;
+        y = Math.random() * (window.innerHeight - (h + 20)) + 10;
 
-        eye.style.left = `${x}px`;
-        eye.style.top = `${y}px`;
-        eye.style.transform = `scale(${Math.random() * 1.5 + 0.5})`;
-
-        eye.__fadeIn = window.setTimeout(() => {
-          eye.style.opacity = "1";
-        }, Math.random() * 1000);
-
-        eye.__fadeOut = window.setTimeout(() => {
-          eye.style.opacity = "0";
-          eye.__removeTimer = window.setTimeout(() => eye.remove(), 1000);
-        }, Math.random() * 4000 + 3000);
+        const r = new DOMRect(x, y, w, h);
+        ok = !safeRects.some((b) => {
+          return !(
+            r.right < b.left - pad ||
+            r.left > b.right + pad ||
+            r.bottom < b.top - pad ||
+            r.top > b.bottom + pad
+          );
+        });
       }
-    }
 
-    const interval = setInterval(createRandomEyes, Math.random() * 7000 + 3000);
+      img.style.left = `${x}px`;
+      img.style.top = `${y}px`;
+
+      layer.appendChild(img);
+      // fade-in
+      requestAnimationFrame(() => img.classList.add("in"));
+
+      const visibleMs = Math.floor(Math.random() * 4000) + 2800;
+      img.__removeTimer = window.setTimeout(() => {
+        img.classList.remove("in");
+        img.__fadeTimer = window.setTimeout(() => {
+          img.remove();
+        }, 450);
+      }, visibleMs);
+    };
+
+    const loop = () => {
+      spawnOne();
+      spawnTimerRef.current = window.setTimeout(loop, Math.random() * 1200 + 700);
+    };
+
+    loop();
 
     return () => {
-      clearInterval(interval);
-      document.querySelectorAll<HTMLImageElement>("img.eyes").forEach((el) => {
-        const eye = el as EyeElement;
-        if (eye.__fadeIn) clearTimeout(eye.__fadeIn);
-        if (eye.__fadeOut) clearTimeout(eye.__fadeOut);
-        if (eye.__removeTimer) clearTimeout(eye.__removeTimer);
-        eye.remove();
+      destroyed = true;
+      if (spawnTimerRef.current) {
+        window.clearTimeout(spawnTimerRef.current);
+        spawnTimerRef.current = null;
+      }
+      // clean up any eyes currently on the layer
+      layer.querySelectorAll<HTMLImageElement>(".shadow-eye").forEach((el) => {
+        const e = el as EyeElement;
+        if (e.__removeTimer) window.clearTimeout(e.__removeTimer);
+        if (e.__fadeTimer) window.clearTimeout(e.__fadeTimer);
+        e.remove();
       });
     };
-  }, []);
+  }, [showLogin]);
 
   const handleLogin = async () => {
     setError("");
-
     if (!username.trim() || !password.trim()) {
       setError("Please enter username and password.");
       return;
     }
 
     try {
-      // Expecting backend to return: { user: { id, name, rank, clearance, ... } }
       const data = await api.post<{ user: Agent }>("/api/login", {
         username,
         password,
       });
-
       const user = data.user;
       if (!user?.id) {
         setError("Invalid login response.");
         return;
       }
-
-      onLogin(user); // pass up to App
+      onLogin(user);
       navigate("/home");
     } catch (err) {
       console.error("Login error:", err);
@@ -130,12 +149,20 @@ export default function Login({ onLogin }: Props) {
 
   return (
     <div>
-      <div className="animation-container"></div>
+      {!showLogin && (
+        <HackyAnimation
+          durationMs={HACK_DURATION_MS}
+          onFinish={() => setShowLogin(true)}
+        />
+      )}
 
-      <div className={`screen-wrapper ${showLogin ? "visible" : ""}`}>
-        <h1 className="glitch">The Archive</h1>
-        <div id="login-area" className="login-container">
+      {/* Login viewport (centered content) */}
+      <div className={`login-viewport ${showLogin ? "is-visible" : ""}`}>
+        <h1 className="login-title glitch">The Archive</h1>
+
+        <div id="login-area" className="login-card">
           <h2 className="login-subtitle">No one escapes the records</h2>
+
           <input
             type="text"
             placeholder="Username"
@@ -143,6 +170,7 @@ export default function Login({ onLogin }: Props) {
             onChange={(e) => setUsername(e.target.value)}
             aria-label="Username"
           />
+
           <input
             type="password"
             placeholder="Password"
@@ -153,12 +181,18 @@ export default function Login({ onLogin }: Props) {
               if (e.key === "Enter") handleLogin();
             }}
           />
+
           <button onClick={handleLogin}>Proceed</button>
-          {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}
+          {error && <p className="login-error">{error}</p>}
         </div>
       </div>
 
-      <div className="mist"></div>
+      {/* Eyes layer (activates when login is visible) */}
+      <div
+        ref={eyesLayerRef}
+        className={`eyes-layer ${showLogin ? "active" : ""}`}
+        aria-hidden
+      />
     </div>
   );
 }
