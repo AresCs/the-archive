@@ -1,0 +1,149 @@
+/* Reset & Base Layout */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: "VT323", monospace;
+  background: black;
+  color: #777;
+  overflow: hidden;
+  overflow-x: hidden; 
+  overflow-y: auto;
+}
+
+.screen-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.screen-wrapper.visible {
+  opacity: 1;
+}
+
+/* Background animation layer */
+.animation-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: url("/images/dark_forest.gif") no-repeat center center/cover;
+  animation: fadeOut 6s forwards;
+  z-index: 10;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  90% { opacity: 0.2; }
+  100% { opacity: 0; display: none; }
+}
+
+/* Title */
+.glitch {
+  font-size: 3rem;
+  color: #444;
+  text-shadow: 2px 2px 5px rgba(50, 50, 50, 0.8);
+  animation: flicker 5s forwards 4s;
+}
+
+@keyframes flicker {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  60% { opacity: 0.6; }
+  90% { opacity: 1; text-shadow: 0px 0px 10px #222; }
+  100% { opacity: 1; }
+}
+
+/* Login Box */
+.login-container {
+  background: rgba(10, 10, 10, 0.85);
+  padding: 2rem;
+  border: 2px solid #222;
+  box-shadow: 0px 0px 10px #111;
+  max-width: 400px;
+  width: 90%;
+  margin-top: 1.5rem;
+}
+
+.login-subtitle {
+  color: cyan;
+  margin-bottom: 1rem;
+  margin-top: 0.5rem;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+
+/* Inputs and Button */
+input, button {
+  display: block;
+  width: 100%;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  font-size: 1.2rem;
+  border: 1px solid #222;
+  background: black;
+  color: #666;
+}
+
+button {
+  cursor: pointer;
+  transition: 0.3s;
+  opacity: 0;
+  animation: fadeInButton 3s forwards 8s;
+}
+
+button:hover {
+  background: #222;
+  color: white;
+  border-color: white;
+  box-shadow: 0px 0px 15px #333;
+}
+
+@keyframes fadeInButton {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mist Layer */
+.mist {
+  position: fixed;
+  width: 150%;
+  height: 150%;
+  top: -25%;
+  left: -25%;
+  background: url("/images/mist_texture.png") no-repeat center;
+  background-size: cover;
+  opacity: 0.08;
+  filter: blur(8px);
+  z-index: -1;
+  animation: mistMove 40s linear infinite alternate;
+}
+
+@keyframes mistMove {
+  0% { transform: translate(0px, 0px) scale(1.1); }
+  100% { transform: translate(40px, -40px) scale(1.2); }
+}
+
+/* Eyes */
+.eyes {
+  position: fixed;
+  width: 50px;
+  height: auto;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}

@@ -1,0 +1,14 @@
+{
+    "name": "the-archive-backend",
+    "version": "1.0.0",
+    "description": "Backend for The Archive project",
+    "main": "index.js",
+    "scripts": {
+        "start": "uvicorn main:app --reload"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {},
+    "devDependencies": {}
+}

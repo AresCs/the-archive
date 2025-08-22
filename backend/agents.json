@@ -1,0 +1,300 @@
+[
+  {
+    "id": "001",
+    "name": "Agent Blackwire",
+    "username": "blackwire",
+    "password": "1234",
+    "rank": "Chief Overseer",
+    "clearance": "Redline",
+    "createdBy": "The Archive",
+    "createdAt": "2025-08-21",
+    "lastActive": "2025-08-22T20:48:56Z",
+    "badgeNumber": "A-0001",
+    "callSign": "ARCH-1",
+    "unit": "Internal Affairs",
+    "division": "Oversight",
+    "onDuty": true,
+    "lastDutyChange": "2025-08-22T09:00:00Z",
+    "shiftSchedule": {
+      "days": [
+        "Mon",
+        "Wed",
+        "Fri"
+      ],
+      "start": "18:00",
+      "end": "02:00",
+      "timezone": "Europe/London"
+    },
+    "steamHex": "11000010ABCDEF1",
+    "fivemLicense": "license:1234abcd5678ef90",
+    "discordId": "123456789012345678",
+    "permissions": [
+      "intel:read",
+      "intel:write",
+      "agents:admin",
+      "cases:assign",
+      "poi:flag",
+      "system:config"
+    ],
+    "specialties": [
+      "Vehicle Tracking",
+      "CCTV Ops",
+      "Counter-Surveillance"
+    ],
+    "certifications": [
+      {
+        "name": "Advanced OSINT",
+        "issued": "2025-06-01",
+        "expires": "2026-06-01"
+      },
+      {
+        "name": "Digital Forensics L2",
+        "issued": "2025-05-12",
+        "expires": "2026-05-12"
+      }
+    ],
+    "trainings": [
+      {
+        "title": "Undercover Protocols",
+        "date": "2025-07-15",
+        "status": "Passed"
+      },
+      {
+        "title": "Vehicle Tagging (RFID)",
+        "date": "2025-07-28",
+        "status": "Passed"
+      }
+    ],
+    "equipmentIssued": [
+      {
+        "item": "Encrypted Radio",
+        "serial": "RAD-AX90-0001",
+        "issued": "2025-05-20"
+      },
+      {
+        "item": "Bodycam Mk.III",
+        "serial": "BC-3-0145",
+        "issued": "2025-06-02"
+      }
+    ],
+    "operations": [
+      "Op: Phantom Drive",
+      "Op: Streetmesh",
+      "Op: Silent Harrow"
+    ],
+    "notes": [
+      {
+        "at": "2025-08-20T22:13:00Z",
+        "by": "system",
+        "text": "Promoted to Chief Overseer."
+      },
+      {
+        "at": "2025-08-21T18:40:00Z",
+        "by": "blackwire",
+        "text": "Authorized new surveillance node in Southside."
+      }
+    ],
+    "logins": [
+      "2025-08-22T09:31:51Z",
+      "2025-08-21T23:10:03Z",
+      "2025-08-21T18:35:11Z"
+    ],
+    "auditLog": [
+      {
+        "at": "2025-08-22T09:32:10Z",
+        "action": "intel:create",
+        "target": "INTEL-2981"
+      },
+      {
+        "at": "2025-08-22T09:33:22Z",
+        "action": "poi:flag",
+        "target": "SUBJ-1142"
+      }
+    ],
+    "twoFactorEnabled": true,
+    "failedLoginCount": 0,
+    "lastPasswordChange": "2025-08-15T12:00:00Z"
+  },
+  {
+    "id": "002",
+    "name": "Agent Nightjar",
+    "username": "nightjar",
+    "password": "4321",
+    "rank": "Handler",
+    "clearance": "Top Secret",
+    "createdBy": "Agent Blackwire",
+    "createdAt": "2025-08-10",
+    "lastActive": "2025-08-22T08:12:05Z",
+    "badgeNumber": "A-0017",
+    "callSign": "ARCH-7",
+    "unit": "Field Ops",
+    "division": "Handlers",
+    "onDuty": false,
+    "lastDutyChange": "2025-08-22T02:05:00Z",
+    "shiftSchedule": {
+      "days": [
+        "Tue",
+        "Thu",
+        "Sat"
+      ],
+      "start": "20:00",
+      "end": "02:00",
+      "timezone": "Europe/London"
+    },
+    "steamHex": "11000010FEDCBA2",
+    "fivemLicense": "license:abcd4321ef901234",
+    "discordId": "234567890123456789",
+    "permissions": [
+      "intel:read",
+      "cases:assign",
+      "poi:flag"
+    ],
+    "specialties": [
+      "Human Intel",
+      "Deep Cover",
+      "Interrogation"
+    ],
+    "certifications": [
+      {
+        "name": "Psych Ops L1",
+        "issued": "2025-04-10",
+        "expires": "2026-04-10"
+      }
+    ],
+    "trainings": [
+      {
+        "title": "Handler Protocols",
+        "date": "2025-07-03",
+        "status": "Passed"
+      },
+      {
+        "title": "Covert Comms",
+        "date": "2025-07-20",
+        "status": "Passed"
+      }
+    ],
+    "equipmentIssued": [
+      {
+        "item": "Encrypted Radio",
+        "serial": "RAD-AX90-0021",
+        "issued": "2025-06-18"
+      }
+    ],
+    "operations": [
+      "Op: Iron Veil"
+    ],
+    "notes": [
+      {
+        "at": "2025-08-12T09:10:00Z",
+        "by": "blackwire",
+        "text": "Assigned to Iron Veil asset network."
+      }
+    ],
+    "logins": [
+      "2025-08-22T02:04:55Z",
+      "2025-08-21T21:02:44Z"
+    ],
+    "auditLog": [
+      {
+        "at": "2025-08-21T21:10:14Z",
+        "action": "intel:update",
+        "target": "INTEL-2944"
+      }
+    ],
+    "twoFactorEnabled": false,
+    "failedLoginCount": 1,
+    "lastPasswordChange": "2025-08-12T10:00:00Z"
+  },
+  {
+    "id": "003",
+    "name": "Agent Vox",
+    "username": "vox",
+    "password": "9876",
+    "rank": "Analyst",
+    "clearance": "Classified",
+    "createdBy": "Agent Nightjar",
+    "createdAt": "2025-08-05",
+    "lastActive": "2025-08-22T07:55:12Z",
+    "badgeNumber": "A-0033",
+    "callSign": "ARCH-33",
+    "unit": "Signals",
+    "division": "Analysis",
+    "onDuty": true,
+    "lastDutyChange": "2025-08-22T06:00:00Z",
+    "shiftSchedule": {
+      "days": [
+        "Mon",
+        "Tue",
+        "Thu",
+        "Sun"
+      ],
+      "start": "06:00",
+      "end": "14:00",
+      "timezone": "Europe/London"
+    },
+    "steamHex": "11000010FACEB00C",
+    "fivemLicense": "license:efef1111aaaa2222",
+    "discordId": "345678901234567890",
+    "permissions": [
+      "intel:read",
+      "intel:write",
+      "poi:flag"
+    ],
+    "specialties": [
+      "Signal Triangulation",
+      "Data Mining",
+      "CCTV Forensics"
+    ],
+    "certifications": [
+      {
+        "name": "Data Analysis L2",
+        "issued": "2025-06-20",
+        "expires": "2026-06-20"
+      }
+    ],
+    "trainings": [
+      {
+        "title": "Archive Query Language",
+        "date": "2025-07-08",
+        "status": "Passed"
+      }
+    ],
+    "equipmentIssued": [
+      {
+        "item": "Workstation Token",
+        "serial": "TK-WS-209",
+        "issued": "2025-06-25"
+      },
+      {
+        "item": "Bodycam Mk.III",
+        "serial": "BC-3-0221",
+        "issued": "2025-07-02"
+      }
+    ],
+    "operations": [
+      "Op: Streetmesh"
+    ],
+    "notes": [
+      {
+        "at": "2025-08-18T14:20:00Z",
+        "by": "vox",
+        "text": "Cross-linked POI sightings with traffic cams."
+      }
+    ],
+    "logins": [
+      "2025-08-22T07:55:12Z",
+      "2025-08-21T12:32:44Z",
+      "2025-08-21T06:12:00Z"
+    ],
+    "auditLog": [
+      {
+        "at": "2025-08-22T07:58:01Z",
+        "action": "intel:create",
+        "target": "INTEL-3012"
+      }
+    ],
+    "twoFactorEnabled": true,
+    "failedLoginCount": 0,
+    "lastPasswordChange": "2025-08-10T11:30:00Z"
+  }
+]

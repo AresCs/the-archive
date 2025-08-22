@@ -1,0 +1,254 @@
+/* ===== Layout ===== */
+.agents-outer {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  background: black;
+  font-family: 'VT323', monospace;
+  color: cyan;
+  z-index: 1;
+
+  display: flex;
+  justify-content: center;   /* center horizontally */
+  align-items: stretch;      /* let inner fill full height */
+
+  overflow: hidden;          /* page itself doesn't scroll */
+  padding: 2rem;             /* outer gutter */
+}
+
+.agents-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+  min-height: 0;             /* CRITICAL for flex children to allow scroll */
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  background-color: rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  box-shadow: 0 0 12px #00ffff33;
+  backdrop-filter: blur(4px);
+
+  padding: 1rem 1.25rem;
+  overflow-y: auto;          /* scroll inside the panel */
+}
+
+/* ===== Header (sticky) ===== */
+.agents-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.25);
+}
+
+.agents-title {
+  font-size: 1.5rem;
+  text-shadow: 0 0 10px cyan;
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+.agents-header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ===== Filters row (new) ===== */
+.agents-filters {
+  display: grid;
+  grid-template-columns: 1fr 220px 220px auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .agents-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+.agents-filter-input,
+.agents-filter-select {
+  background: rgba(0,0,0,0.5);
+  color: cyan;
+  border: 1px solid rgba(0,255,255,0.35);
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+}
+
+.agents-filters-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* ===== Scroll area ===== */
+.agents-scroll {
+  flex: 1 1 auto;
+  min-height: 0;             /* enables scrolling */
+  padding: 0.5rem 0 1.5rem;
+}
+
+/* ===== Grid ===== */
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .agents-grid { grid-template-columns: repeat(2, minmax(260px, 1fr)); }
+}
+@media (max-width: 720px) {
+  .agents-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== Cards ===== */
+.agent-card {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 1rem;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.agent-card p {
+  margin: 0.4rem 0;
+  font-size: 1rem;
+  color: #44faff;
+}
+
+.agent-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+/* ===== Buttons ===== */
+.back-button,
+.add-button,
+.edit-button,
+.delete-button {
+  background-color: rgba(0, 255, 255, 0.08);
+  border: 1px solid #00ffff50;
+  color: cyan;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.back-button:hover,
+.add-button:hover,
+.edit-button:hover,
+.delete-button:hover {
+  background-color: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 8px #0ff;
+  color: white;
+}
+
+/* Kill all fancy effects on buttons (as requested) */
+.agents-inner button,
+.agents-modal button {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* ===== Modal (Add / Edit / Confirm Delete) ===== */
+.agents-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999; /* above panel */
+}
+
+.agents-modal {
+  width: min(720px, 92vw);
+  background: rgba(0,0,0,0.9);
+  border: 1px solid rgba(0,255,255,0.35);
+  border-radius: 12px;
+  box-shadow: 0 0 12px #00ffff55;
+  padding: 1rem 1.25rem;
+  color: cyan;
+  font-family: 'VT323', monospace;
+}
+
+.agents-error {
+  color: #ff9f9f;
+}
+
+/* Form inside modal */
+.agent-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 0.5rem 0 0.75rem;
+}
+@media (max-width: 720px) {
+  .agent-form-grid { grid-template-columns: 1fr; }
+}
+
+.agent-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.agent-field span {
+  color: #9ff;
+  letter-spacing: 0.02em;
+}
+.agent-field input,
+.agent-field select {
+  background: rgba(0,0,0,0.5);
+  color: cyan;
+  border: 1px solid rgba(0,255,255,0.35);
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+  font-family: inherit;
+}
+
+.agent-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+/* ===== Helper states ===== */
+.agents-loading,
+.agents-error,
+.agents-empty {
+  padding: 1rem;
+  color: #9ff;
+}
+
+/* If your Matrix canvas overlaps inputs, ignore pointer events */
+.agents-outer canvas { pointer-events: none; }

@@ -1,0 +1,252 @@
+[
+  {
+    "full_name": "Ariel Knight",
+    "dob": "2000-09-20",
+    "gender": "Female",
+    "nationality": "British",
+    "current_address": "Mirror Park",
+    "gang_affiliation": "Most Wanted",
+    "known_aliases": [
+      "Sakura"
+    ],
+    "known_associates": [
+      "Whitecat",
+      "Doughy",
+      "Zenith",
+      "Monkeyman",
+      ""
+    ],
+    "organization_ties": [
+      "N/A"
+    ],
+    "suspected_informant": "None",
+    "known_vehicles": [],
+    "radio_frequencies": [
+      "66"
+    ],
+    "id": 1,
+    "tracked_devices": [
+      "N/A"
+    ],
+    "recent_movements": [
+      "N/A"
+    ],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "recent_contacts": [
+      "N/A"
+    ],
+    "blackmail_material": "N/A",
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-22",
+    "access_level": "agent-only",
+    "image_url": "",
+    "internal_flags": [
+      "Person of Interest"
+    ],
+    "linked_reports": [],
+    "last_known_location": "N/A",
+    "personality_notes": "N/A",
+    "behavioral_patterns": "N/A"
+  },
+  {
+    "full_name": "Kira Wong",
+    "dob": "2000-05-10",
+    "gender": "Female",
+    "current_address": "Mirror Park",
+    "gang_affiliation": "Most Wanted",
+    "known_aliases": [
+      "Whitecat"
+    ],
+    "known_vehicles": [
+      {
+        "make": "Annis",
+        "model": "RH4",
+        "color": "White",
+        "plate": "7DJ144ME"
+      }
+    ],
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-22",
+    "access_level": "handler-only",
+    "internal_flags": [
+      "Person of Interest"
+    ],
+    "id": 9,
+    "known_associates": [
+      "Sakura",
+      "Doughy",
+      "Zenith",
+      "Monkeyman",
+      ""
+    ],
+    "image_url": "",
+    "organization_ties": [],
+    "recent_contacts": [],
+    "suspected_informant": "unknown",
+    "radio_frequencies": [],
+    "tracked_devices": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "linked_reports": []
+  },
+  {
+    "full_name": "Regina Raine",
+    "gender": "Female",
+    "gang_affiliation": "LSPD",
+    "recent_contacts": [
+      "5551877127"
+    ],
+    "id": 10
+  },
+  {
+    "full_name": "Johnny Lin",
+    "gender": "Male",
+    "known_aliases": [
+      "Ruby"
+    ],
+    "known_associates": [
+      "Racers"
+    ],
+    "recent_contacts": [
+      "0691483706"
+    ],
+    "id": 11,
+    "image_url": "",
+    "organization_ties": [],
+    "suspected_informant": "unknown",
+    "known_vehicles": [],
+    "radio_frequencies": [],
+    "tracked_devices": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "blackmail_material": "(Possibly OOC - Secret dock location for illegal businesses.\nOcean's Harvest Dry Storage )",
+    "linked_reports": [],
+    "internal_flags": [],
+    "access_level": "public",
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-22",
+    "current_address": "Mirror Park"
+  },
+  {
+    "full_name": "Unknown Name",
+    "gang_affiliation": "AODMC",
+    "known_aliases": [
+      "Wombat"
+    ],
+    "id": 13
+  },
+  {
+    "known_associates": [],
+    "known_aliases": [
+      "Rightside"
+    ],
+    "full_name": "Unknown Name",
+    "id": 14,
+    "image_url": "",
+    "gang_affiliation": "Racers",
+    "organization_ties": [],
+    "recent_contacts": [],
+    "suspected_informant": "unknown",
+    "known_vehicles": [],
+    "radio_frequencies": [],
+    "tracked_devices": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "linked_reports": [],
+    "internal_flags": [],
+    "access_level": "public"
+  },
+  {
+    "full_name": "Xodiac",
+    "known_aliases": [
+      "Sleepy"
+    ],
+    "id": 15
+  },
+  {
+    "image_url": "",
+    "full_name": "Skip (Unknown)",
+    "known_aliases": [
+      ""
+    ],
+    "gender": "Male",
+    "gang_affiliation": "AODMC",
+    "known_associates": [],
+    "organization_ties": [],
+    "recent_contacts": [],
+    "suspected_informant": "no",
+    "known_vehicles": [],
+    "radio_frequencies": [],
+    "tracked_devices": [],
+    "recent_movements": [],
+    "cctv_snapshots": [
+      "https://i.imgur.com/JmxbPBl.jpeg",
+      "https://i.imgur.com/FtVLJqc.jpeg"
+    ],
+    "intercepted_audio": [],
+    "blackmail_material": "(Possibly OOC - Secret dock location for illegal businesses.\nOcean's Harvest Dry Storage, All transactions done via cash, no transaction. )",
+    "linked_reports": [],
+    "internal_flags": [
+      "Person of Interest"
+    ],
+    "access_level": "public",
+    "id": 16,
+    "nationality": "",
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-08"
+  },
+  {
+    "image_url": "",
+    "full_name": "Jason Ross",
+    "known_aliases": [
+      "JayR"
+    ],
+    "gender": "Male",
+    "current_address": "Pink Cage",
+    "gang_affiliation": "Refugees",
+    "known_associates": [],
+    "organization_ties": [],
+    "recent_contacts": [],
+    "suspected_informant": "unknown",
+    "known_vehicles": [],
+    "radio_frequencies": [],
+    "tracked_devices": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "linked_reports": [],
+    "internal_flags": [],
+    "access_level": "public",
+    "id": 17
+  },
+  {
+    "full_name": "Melody Burke",
+    "known_aliases": [
+      "Siren"
+    ],
+    "gender": "Female",
+    "known_associates": [],
+    "organization_ties": [
+      "EMS"
+    ],
+    "recent_contacts": [],
+    "suspected_informant": "unknown",
+    "known_vehicles": [],
+    "tracked_devices": [],
+    "radio_frequencies": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-22",
+    "access_level": "handler-only",
+    "image_url": "",
+    "internal_flags": [],
+    "linked_reports": [],
+    "id": 18
+  }
+]

@@ -1,0 +1,300 @@
+/* ===============================
+   THEME
+   =============================== */
+.NewEntryForm {
+  --bg: #0b0f10;
+  --panel: #0f1416;
+  --muted: #9ccfd8;          /* softer cyan text */
+  --accent: #3df5e7;         /* neon accent */
+  --accent-weak: #3df5e733;  /* faint accent for borders */
+  --accent-glow: 0 0 12px #3df5e766;
+  --text: #d7e3e7;
+  --text-dim: #9fb1b7;
+  --danger: #ff4d4f;
+  --success: #2ecc71;
+  --warn: #f0c36a;
+  --border: #1e2a2e;
+  --radius: 10px;
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --focus-ring: 0 0 0 2px var(--accent), 0 0 12px 2px #3df5e755;
+}
+
+/* ===============================
+   FORM CONTAINER
+   =============================== */
+.NewEntryForm {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: linear-gradient(180deg, var(--panel), var(--bg));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-family: "VT323", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--text);
+}
+
+/* Optional title */
+.form-title {
+  font-size: 28px;
+  text-align: center;
+  color: var(--accent);
+  text-shadow: var(--accent-glow);
+  letter-spacing: 0.5px;
+  margin: 4px 0 12px;
+}
+
+/* ===============================
+   LAYOUT: COLUMNS
+   =============================== */
+.columns-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.entry-column {
+  background: rgba(10, 16, 18, 0.35);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Section headings */
+.entry-column h3 {
+  margin: 4px 0 8px;
+  font-size: 18px;
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px dashed var(--accent-weak);
+  padding-bottom: 6px;
+  text-shadow: 0 0 6px #2fe2d255;
+}
+
+/* ===============================
+   INPUT GROUPS
+   =============================== */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-group label {
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.2px;
+}
+
+/* Inputs / selects / textareas */
+.input-group input,
+.input-group textarea,
+.input-group select {
+  background: #0c1113;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  width: 100%;
+}
+
+.input-group input::placeholder,
+.input-group textarea::placeholder {
+  color: var(--text-dim);
+  opacity: .7;
+}
+
+.input-group input:hover,
+.input-group textarea:hover,
+.input-group select:hover {
+  border-color: var(--accent-weak);
+}
+
+.input-group input:focus,
+.input-group textarea:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+  background: #0c1316;
+}
+
+/* Checkbox row */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+/* ===============================
+   VEHICLES
+   =============================== */
+.vehicle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vehicle-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.vehicle-row input {
+  min-width: 0; /* prevent overflow in grid */
+}
+
+.NewEntryForm-add-vehicle {
+  background: transparent;
+  border: 1px dashed var(--accent-weak);
+  color: var(--muted);
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  align-self: flex-start;
+  transition: border-color .15s ease, color .15s ease, transform .08s ease;
+}
+
+.NewEntryForm-add-vehicle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.NewEntryForm-delete-vehicle {
+  background: #1a2224;
+  color: #fff;
+  border: 1px solid #2a363a;
+  padding: 6px 10px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s ease, transform .08s ease, box-shadow .15s ease;
+}
+
+.NewEntryForm-delete-vehicle:hover {
+  background: #252f33;
+  box-shadow: 0 0 0 1px #2a363a inset;
+  transform: translateY(-1px);
+}
+
+/* ===============================
+   ACTIONS
+   =============================== */
+.NewEntryForm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.NewEntryForm-submit-button,
+.NewEntryForm-cancel-button {
+  padding: 10px 18px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .08s ease, box-shadow .15s ease, filter .15s ease, border-color .15s ease;
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+.NewEntryForm-submit-button {
+  background: linear-gradient(180deg, #35d18a, #2ecc71);
+  color: #07110c;
+  box-shadow: 0 8px 18px rgba(46, 204, 113, .25);
+}
+.NewEntryForm-submit-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  border-color: #40f0a2;
+}
+
+.NewEntryForm-cancel-button {
+  background: linear-gradient(180deg, #ff6b6e, #e74c3c);
+  color: #1b0707;
+  box-shadow: 0 8px 18px rgba(231, 76, 60, .25);
+}
+.NewEntryForm-cancel-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  border-color: #ff9b9b;
+}
+
+/* ===============================
+   RESPONSIVE
+   =============================== */
+@media (max-width: 1100px) {
+  .columns-wrapper {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .columns-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .NewEntryForm-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* ===============================
+   SCROLLBARS (optional)
+   =============================== */
+.NewEntryForm * {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3a3f #0e1315;
+}
+.NewEntryForm *::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+.NewEntryForm *::-webkit-scrollbar-thumb {
+  background: #2a3a3f;
+  border-radius: 8px;
+  border: 2px solid #0e1315;
+}
+.NewEntryForm *::-webkit-scrollbar-track {
+  background: #0e1315;
+  border-radius: 8px;
+}
+
+.NewEntryForm textarea {
+  min-height: 120px;   /* lets you see multiple lines */
+  line-height: 1.25;
+  white-space: pre-wrap;  /* show linebreaks if any styling overrides occur */
+  resize: vertical;    /* allow the user to expand if they want */
+}
