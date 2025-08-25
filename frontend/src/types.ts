@@ -31,6 +31,7 @@ export type Person = {
   last_updated?: string;
   internal_flags?: string[];
   access_level?: 'public' | 'agent-only' | 'handler-only';
+  high_priority_at?: string; // ISO timestamp when flagged
 };
 
 /** Authenticated agent/operator shape used across the UI */
@@ -39,6 +40,7 @@ export type Agent = {
   name: string;
   rank: string;
   clearance: string;
+  high_priority_at?: string; // ISO timestamp when flagged
 };
 
 /** Intel document as returned by the backend API */
@@ -53,4 +55,5 @@ export type Intel = {
   source?: string;
   created_by?: string;
   last_updated?: string;
+  high_priority_at?: string; // ISO timestamp when flagged
 };

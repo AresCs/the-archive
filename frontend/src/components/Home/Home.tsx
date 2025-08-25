@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import MatrixCanvas from "../MatrixCanvas/MatrixCanvas";
 import "./Home.css";
 
@@ -20,12 +20,14 @@ type HighPriorityItem = {
   id: number;
   type: "person" | "intel";
   title: string;
-  flaggedAt: string;
+  flaggedAt: string; // ISO string
 };
 
 export default function HomePage({ user, loading, setUser }: Props) {
   const navigate = useNavigate();
   const [highPriority, setHighPriority] = useState<HighPriorityItem[]>([]);
+  const [hpLoading, setHpLoading] = useState(false);
+  const [hpError, setHpError] = useState<string | null>(null);
   const [systemStatus] = useState("Online");
 
   const handleLogout = () => {
@@ -35,38 +37,72 @@ export default function HomePage({ user, loading, setUser }: Props) {
   };
 
   useEffect(() => {
+    if (!user || loading) return;
+
+    const ctrl = new AbortController();
+    const fetchHP = async () => {
+      setHpLoading(true);
+      setHpError(null);
+      try {
+        const res = await fetch("http://localhost:8000/api/high-priority", {
+          signal: ctrl.signal,
+        });
+        if (!res.ok) {
+          throw new Error(`Request failed: ${res.status}`);
+        }
+        const data: HighPriorityItem[] = await res.json();
+
+        const sorted = [...data].sort(
+          (a, b) =>
+            new Date(b.flaggedAt).getTime() - new Date(a.flaggedAt).getTime()
+        );
+        setHighPriority(sorted.slice(0, 5));
+      } catch (err: unknown) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        if (err instanceof Error) {
+          setHpError(err.message);
+        } else {
+          setHpError("Failed to load high priority list.");
+        }
+        setHighPriority([]);
+      } finally {
+        setHpLoading(false);
+      }
+    };
+
+    fetchHP();
+    return () => ctrl.abort();
+  }, [user, loading]);
+
+  useEffect(() => {
     if (!user && !loading) {
       navigate("/");
-    } else if (user) {
-      // Placeholder fetch for future: will pull from backend once we add flagging
-      fetch("http://localhost:8000/api/high-priority")
-        .then((res) => res.json())
-        .then((data: HighPriorityItem[]) => {
-          // For now, just limit to top 5 and sort by newest flag
-          const sorted = [...data].sort(
-            (a, b) => new Date(b.flaggedAt).getTime() - new Date(a.flaggedAt).getTime()
-          );
-          setHighPriority(sorted.slice(0, 5));
-        })
-        .catch(() => {
-          // Until backend exists, we can show sample placeholder
-          setHighPriority([
-            {
-              id: 1,
-              type: "intel",
-              title: "Night Market",
-              flaggedAt: new Date().toISOString(),
-            },
-            {
-              id: 2,
-              type: "person",
-              title: "Sakura",
-              flaggedAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-            },
-          ]);
-        });
     }
   }, [user, loading, navigate]);
+
+  const renderedHP = useMemo(() => {
+    if (hpLoading) return <li>• Loading…</li>;
+    if (hpError) return <li>• {hpError}</li>;
+    if (highPriority.length === 0) return <li>• No high priority items</li>;
+
+    return highPriority.map((item) => (
+      <li
+        key={`${item.type}-${item.id}`}
+        className="high-priority-item"
+        onClick={() =>
+          navigate(
+            item.type === "person"
+              ? `/search?query=${encodeURIComponent(item.title)}`
+              : `/intel?query=${encodeURIComponent(item.title)}`
+          )
+        }
+        style={{ cursor: "pointer" }}
+        title={`Flagged at ${new Date(item.flaggedAt).toLocaleString()}`}
+      >
+        • [{item.type.toUpperCase()}] {item.title}
+      </li>
+    ));
+  }, [hpLoading, hpError, highPriority, navigate]);
 
   if (loading) return <div className="loading-screen">Loading...</div>;
   if (!user) return null;
@@ -97,24 +133,7 @@ export default function HomePage({ user, loading, setUser }: Props) {
 
         <div className="recent-activity">
           <h2>High Priority</h2>
-          <ul>
-            {highPriority.length === 0 ? (
-              <li>• No high priority items</li>
-            ) : (
-              highPriority.map((item) => (
-                <li
-                  key={`${item.type}-${item.id}`}
-                  className="high-priority-item"
-                  onClick={() =>
-                    navigate(item.type === "person" ? `/search?query=${item.title}` : `/intel?query=${item.title}`)
-                  }
-                  style={{ cursor: "pointer" }}
-                >
-                  • [{item.type.toUpperCase()}] {item.title}
-                </li>
-              ))
-            )}
-          </ul>
+          <ul>{renderedHP}</ul>
         </div>
       </div>
     </div>

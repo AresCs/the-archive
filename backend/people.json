@@ -38,7 +38,7 @@
     ],
     "blackmail_material": "N/A",
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-22",
+    "last_updated": "2025-08-25",
     "access_level": "agent-only",
     "image_url": "",
     "internal_flags": [
@@ -67,7 +67,7 @@
       }
     ],
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-22",
+    "last_updated": "2025-08-25",
     "access_level": "handler-only",
     "internal_flags": [
       "Person of Interest"
@@ -106,15 +106,15 @@
     "known_aliases": [
       "Ruby"
     ],
-    "known_associates": [
-      "Racers"
-    ],
+    "known_associates": [],
     "recent_contacts": [
       "0691483706"
     ],
     "id": 11,
     "image_url": "",
-    "organization_ties": [],
+    "organization_ties": [
+      "Racers"
+    ],
     "suspected_informant": "unknown",
     "known_vehicles": [],
     "radio_frequencies": [],
@@ -127,23 +127,36 @@
     "internal_flags": [],
     "access_level": "public",
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-22",
+    "last_updated": "2025-08-25",
     "current_address": "Mirror Park"
   },
   {
-    "full_name": "Unknown Name",
+    "full_name": "Wombat (Unknown)",
     "gang_affiliation": "AODMC",
-    "known_aliases": [
-      "Wombat"
-    ],
-    "id": 13
+    "known_aliases": [],
+    "id": 13,
+    "image_url": "",
+    "known_associates": [],
+    "organization_ties": [],
+    "recent_contacts": [],
+    "suspected_informant": "unknown",
+    "known_vehicles": [],
+    "radio_frequencies": [],
+    "tracked_devices": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "linked_reports": [],
+    "internal_flags": [],
+    "access_level": "public",
+    "last_updated": "2025-08-25"
   },
   {
     "known_associates": [],
     "known_aliases": [
       "Rightside"
     ],
-    "full_name": "Unknown Name",
+    "full_name": "Unknown",
     "id": 14,
     "image_url": "",
     "gang_affiliation": "Racers",
@@ -158,14 +171,8 @@
     "intercepted_audio": [],
     "linked_reports": [],
     "internal_flags": [],
-    "access_level": "public"
-  },
-  {
-    "full_name": "Xodiac",
-    "known_aliases": [
-      "Sleepy"
-    ],
-    "id": 15
+    "access_level": "public",
+    "last_updated": "2025-08-25"
   },
   {
     "image_url": "",
@@ -242,11 +249,89 @@
     "cctv_snapshots": [],
     "intercepted_audio": [],
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-22",
+    "last_updated": "2025-08-25",
     "access_level": "handler-only",
     "image_url": "",
     "internal_flags": [],
     "linked_reports": [],
-    "id": 18
+    "id": 18,
+    "gang_affiliation": "EMS"
+  },
+  {
+    "full_name": "Zekk Frost",
+    "known_aliases": [
+      "Sleepy"
+    ],
+    "known_associates": [],
+    "organization_ties": [
+      "Racer"
+    ],
+    "recent_contacts": [],
+    "suspected_informant": "unknown",
+    "known_vehicles": [],
+    "tracked_devices": [],
+    "radio_frequencies": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "access_level": "public",
+    "image_url": "",
+    "internal_flags": [],
+    "linked_reports": [],
+    "id": 19,
+    "created_by": "system",
+    "last_updated": "2025-08-25"
+  },
+  {
+    "full_name": "Caroline Walker",
+    "known_aliases": [
+      "Salem"
+    ],
+    "known_associates": [],
+    "organization_ties": [
+      "Racer"
+    ],
+    "recent_contacts": [],
+    "suspected_informant": "unknown",
+    "known_vehicles": [],
+    "tracked_devices": [],
+    "radio_frequencies": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "access_level": "public",
+    "image_url": "",
+    "internal_flags": [],
+    "linked_reports": [],
+    "id": 20,
+    "created_by": "system",
+    "last_updated": "2025-08-25"
+  },
+  {
+    "full_name": "Max Tyme",
+    "known_aliases": [],
+    "gender": "Male",
+    "known_associates": [],
+    "organization_ties": [
+      "PD"
+    ],
+    "recent_contacts": [],
+    "suspected_informant": "unknown",
+    "known_vehicles": [],
+    "tracked_devices": [],
+    "radio_frequencies": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "blackmail_material": "Activity doing races. ",
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-25",
+    "access_level": "handler-only",
+    "image_url": "",
+    "internal_flags": [
+      "Person of Interest"
+    ],
+    "linked_reports": [],
+    "id": 21
   }
 ]

@@ -467,3 +467,106 @@ def delete_intel(intel_id: str) -> Dict[str, Any]:
         raise HTTPException(404, detail="Intel not found")
     save_intel(new_items)
     return {"message": "deleted", "intel": deleted}
+
+
+# --- High Priority helpers (add-only) ---
+def _has_high_priority(rec: Dict[str, Any]) -> bool:
+    flags = rec.get("internal_flags") or []
+    try:
+        return any(isinstance(f, str) and f.lower() == "high priority" for f in flags)
+    except Exception:
+        return False
+
+def _set_high_priority(rec: Dict[str, Any], value: bool) -> None:
+    flags = list(rec.get("internal_flags") or [])
+    has = _has_high_priority(rec)
+
+    if value and not has:
+        flags.append("High Priority")
+        rec["internal_flags"] = flags
+        rec["high_priority_at"] = _now_iso()
+    elif not value and has:
+        rec["internal_flags"] = [f for f in flags if str(f).lower() != "high priority"]
+        rec.pop("high_priority_at", None)
+
+    # keep last_updated fresh if the record tracks it
+    if "last_updated" in rec:
+        rec["last_updated"] = _now_iso()
+
+
+@app.get("/api/high-priority")
+def get_high_priority() -> List[Dict[str, Any]]:
+    people = load_people()
+    intel = load_intel()
+
+    out: List[Dict[str, Any]] = []
+
+    # people
+    for p in (people or []):
+        if isinstance(p, dict) and _has_high_priority(p):
+            out.append({
+                "id": p.get("id"),
+                "type": "person",
+                "title": p.get("full_name") or p.get("name") or f"Person {p.get('id')}",
+                "flaggedAt": p.get("high_priority_at") or p.get("last_updated") or _now_iso(),
+            })
+
+    # intel
+    for i in (intel or []):
+        if isinstance(i, dict) and _has_high_priority(i):
+            out.append({
+                "id": i.get("id"),
+                "type": "intel",
+                "title": i.get("title") or f"Intel {i.get('id')}",
+                "flaggedAt": i.get("high_priority_at") or i.get("last_updated") or _now_iso(),
+            })
+
+    # newest first
+    out.sort(key=lambda r: r.get("flaggedAt", ""), reverse=True)
+    return out
+
+
+@app.post("/api/people/{person_id}/priority")
+def set_person_priority(person_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
+    want = bool(body.get("high_priority", True))
+    items = load_people()
+    target = _normalize_id_str(person_id)
+
+    for rec in items:
+        if _normalize_id_str(rec.get("id", "")) == target:
+            if rec.get("internal_flags") is None:
+                rec["internal_flags"] = []
+            _set_high_priority(rec, want)
+            save_people(items)
+            return {"person": rec}
+
+    raise HTTPException(404, detail="Person not found")
+
+
+@app.post("/api/intel/{intel_id}/priority")
+def set_intel_priority(intel_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
+    want = bool(body.get("high_priority", True))
+    items = load_intel()
+    target = _normalize_id_str(intel_id)
+
+    for rec in items:
+        if _normalize_id_str(rec.get("id", "")) == target:
+            if rec.get("internal_flags") is None:
+                rec["internal_flags"] = []
+            if "internal_flags" not in rec:
+                rec["internal_flags"] = []
+            _set_high_priority(rec, want)
+            save_intel(items)
+            return {"intel": rec}
+
+    raise HTTPException(404, detail="Intel not found")
+
+
+@app.get("/api/intel/{intel_id}")
+def read_intel(intel_id: str) -> Dict[str, Any]:
+    items = load_intel()
+    target = _normalize_id_str(intel_id)
+    for rec in items:
+        if _normalize_id_str(rec.get("id", "")) == target:
+            return {"entry": rec}
+    raise HTTPException(404, detail="Intel not found")

@@ -19,9 +19,10 @@
     "linked_operations": [
       "OP-OBSIDIAN-11"
     ],
-    "last_updated": "2025-08-22T20:23:32.519Z",
+    "last_updated": "2025-08-25T08:14:24Z",
     "created_by": "Agent Greys",
-    "status": "Ongoing"
+    "status": "Ongoing",
+    "internal_flags": []
   },
   {
     "id": 2,
@@ -113,8 +114,9 @@
     "linked_operations": [
       "OP-REDCROW-23"
     ],
-    "last_updated": "2025-08-22T20:23:45.646Z",
+    "last_updated": "2025-08-25T08:14:28Z",
     "created_by": "Agent Grey",
-    "status": "Closed"
+    "status": "Closed",
+    "internal_flags": []
   }
 ]

@@ -59,6 +59,48 @@ export default function PersonDetails({
   const allowed = canView(person, viewerClearance);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // High Priority toggle state & helpers
+  const [priorityBusy, setPriorityBusy] = useState(false);
+
+  const isHighPriority = useMemo(
+    () =>
+      (person.internal_flags ?? []).some(
+        (f) => typeof f === "string" && f.toLowerCase() === "high priority"
+      ),
+    [person.internal_flags]
+  );
+
+  async function toggleHighPriority() {
+    if (person.id === undefined) return;
+    setPriorityBusy(true);
+    try {
+      const res = await fetch(`http://localhost:8000/api/people/${person.id}/priority`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ high_priority: !isHighPriority }),
+      });
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+      const data: unknown = await res.json();
+      if (data && typeof data === "object") {
+        const obj = data as Record<string, unknown>;
+        if (obj.person && typeof obj.person === "object") {
+          onEdit(obj.person as Partial<Person>);
+        } else {
+          throw new Error("Unexpected response from server.");
+        }
+      } else {
+        throw new Error("Unexpected response from server.");
+      }
+    } catch (err: unknown) {
+      if (!(err instanceof DOMException && err.name === "AbortError")) {
+        console.error(err);
+        alert("Failed to update High Priority.");
+      }
+    } finally {
+      setPriorityBusy(false);
+    }
+  }
+
   const handleDelete = () => {
     if (person.id !== undefined) onDelete(person.id);
   };
@@ -78,6 +120,9 @@ export default function PersonDetails({
           <div className="person-title-inline">
             <h2>{person.full_name}</h2>
             <div className="flag-container">
+              {isHighPriority && (
+                <span className="flag flag-danger">High Priority</span>
+              )}
               {person.gang_affiliation && (
                 <span className="flag flag-gang">{person.gang_affiliation}</span>
               )}
@@ -124,7 +169,7 @@ export default function PersonDetails({
           <ListRow label="Aliases" items={person.known_aliases} />
         </div>
 
-        {/* Affiliations */}
+        {/* Network */}
         <div className="person-section">
           <h3>Network</h3>
           <ListRow label="Associates" items={person.known_associates} />
@@ -203,57 +248,40 @@ export default function PersonDetails({
             )
           ) : null}
 
-          {/* Intercepted audio */}
+          {/* Audio clips (links) */}
           {person.intercepted_audio?.length ? (
             allowed ? (
-              <div className="audio-list">
-                <strong>Audio:</strong>
-                <ul>
-                  {person.intercepted_audio.map((src, i) => (
-                    <li key={i}>
-                      <audio controls src={src}>
-                        Your browser does not support the audio element.
-                      </audio>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <ul className="audio-list">
+                {person.intercepted_audio.map((src, i) => (
+                  <li key={i}>
+                    <a href={src} target="_blank" rel="noreferrer">
+                      Audio {i + 1}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             ) : (
               <Redacted label="Audio" />
             )
           ) : null}
 
-          {/* Notes / patterns / blackmail */}
-          {person.personality_notes &&
-            (allowed ? (
-              <p>
-                <strong>Notes:</strong> {person.personality_notes}
-              </p>
-            ) : (
-              <Redacted label="Notes" />
-            ))}
-          {person.behavioral_patterns &&
-            (allowed ? (
-              <p>
-                <strong>Patterns:</strong> {person.behavioral_patterns}
-              </p>
-            ) : (
-              <Redacted label="Patterns" />
-            ))}
-          {person.blackmail_material &&
-            (allowed ? (
+          {/* Blackmail material */}
+          {person.blackmail_material ? (
+            allowed ? (
               <p>
                 <strong>Blackmail:</strong> {person.blackmail_material}
               </p>
             ) : (
               <Redacted label="Blackmail" />
-            ))}
+            )
+          ) : null}
 
-          {person.linked_reports?.length
-            ? allowed
-              ? <ListRow label="Reports" items={person.linked_reports} />
-              : <Redacted label="Reports" />
-            : null}
+          {/* Linked reports */}
+          {person.linked_reports?.length ? (
+            <p>
+              <strong>Reports:</strong> {person.linked_reports.join(", ")}
+            </p>
+          ) : null}
         </div>
 
         {/* Meta */}
@@ -269,6 +297,12 @@ export default function PersonDetails({
               <strong>Updated:</strong> {lastUpdatedPretty}
             </p>
           )}
+          {isHighPriority && person.high_priority_at && (
+            <p>
+              <strong>High Priority Since:</strong>{" "}
+              {new Date(person.high_priority_at).toLocaleString()}
+            </p>
+          )}
           {person.internal_flags?.length
             ? allowed
               ? <ListRow label="Flags" items={person.internal_flags} />
@@ -280,6 +314,16 @@ export default function PersonDetails({
         <div className="person-actions">
           <button className="edit-button" onClick={() => onEdit(person)}>
             Edit
+          </button>
+          <button
+            className={`priority-button ${isHighPriority ? "on" : ""}`}
+            onClick={toggleHighPriority}
+            disabled={person.id === undefined || priorityBusy}
+            title={isHighPriority ? "Unmark High Priority" : "Mark High Priority"}
+            aria-pressed={isHighPriority}
+            aria-busy={priorityBusy}
+          >
+            {priorityBusy ? "Saving…" : isHighPriority ? "Unmark High Priority" : "Mark High Priority"}
           </button>
           <button
             className="delete-button"
