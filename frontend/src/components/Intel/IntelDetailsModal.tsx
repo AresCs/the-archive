@@ -158,6 +158,14 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
     () => toList((record as unknown as Record<string, unknown>)["linked_reports"]),
     [record]
   );
+  const orgs = useMemo(
+    () => toList((record as unknown as Record<string, unknown>)["linked_organizations"]),
+    [record]
+  );
+  const ops = useMemo(
+    () => toList((record as unknown as Record<string, unknown>)["linked_operations"]),
+    [record]
+  );
 
   /** Actions */
   const toggleHighPriority = async () => {
@@ -284,7 +292,7 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
 
         {/* Two-column content */}
         <div className="intel-detail-grid">
-          {/* Left: Summary & Links */}
+          {/* Left: Summary, Blackmail, Links */}
           <section className="intel-detail-section">
             <h3 className="intel-detail-section-title">Summary</h3>
             <div className="intel-detail-kv">
@@ -292,6 +300,13 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
                 <div className="intel-detail-kv-key">Summary</div>
                 <div className="intel-detail-kv-val">
                   {propString(record, "summary") || "—"}
+                </div>
+              </div>
+
+              <div className="intel-detail-kv-row">
+                <div className="intel-detail-kv-key">Blackmail Material</div>
+                <div className="intel-detail-kv-val">
+                  {propString(record, "blackmail_material") || "—"}
                 </div>
               </div>
 
@@ -313,7 +328,7 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
             </div>
           </section>
 
-          {/* Right: Details & Flags */}
+          {/* Right: Details, Orgs/Ops & Flags */}
           <section className="intel-detail-section">
             <h3 className="intel-detail-section-title">Details</h3>
             <div className="intel-detail-kv">
@@ -330,7 +345,7 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
                 </div>
               </div>
               <div className="intel-detail-kv-row">
-                <div className="intel-detail-kv-key">Operation</div>
+                <div className="intel-detail-kv-key">Operation Code</div>
                 <div className="intel-detail-kv-val">
                   {propString(record, "operation_code") || "—"}
                 </div>
@@ -341,6 +356,29 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
                   {propString(record, "status") || "—"}
                 </div>
               </div>
+              <div className="intel-detail-kv-row">
+                <div className="intel-detail-kv-key">Classification</div>
+                <div className="intel-detail-kv-val">
+                  {propString(record, "classification") || "—"}
+                </div>
+              </div>
+
+              {orgs.length > 0 && (
+                <div className="intel-detail-kv-row">
+                  <div className="intel-detail-kv-key">Organizations</div>
+                  <div className="intel-detail-kv-val">
+                    {orgs.join(", ")}
+                  </div>
+                </div>
+              )}
+              {ops.length > 0 && (
+                <div className="intel-detail-kv-row">
+                  <div className="intel-detail-kv-key">Operations</div>
+                  <div className="intel-detail-kv-val">
+                    {ops.join(", ")}
+                  </div>
+                </div>
+              )}
 
               <div className="intel-detail-kv-row">
                 <div className="intel-detail-kv-key">High Priority Since</div>

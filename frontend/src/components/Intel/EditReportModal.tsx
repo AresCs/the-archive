@@ -102,12 +102,27 @@ export default function EditReportModal({
               value={collectionMethod}
               onChange={(e) => onCollectionMethodChange(e.target.value)}
             />
-            <input
-              aria-label="Classification"
-              placeholder="Classification"
-              value={classification}
-              onChange={(e) => onClassificationChange(e.target.value)}
-            />
+            <label style={{ display: "block", marginTop: "0.5rem" }}>
+              <span className="sr-only">Classification</span>
+              <select
+                aria-label="Classification"
+                value={classification}
+                onChange={(e) => onClassificationChange(e.target.value)}
+                className="intel-select"
+              >
+                <option value="" disabled>
+                  Select classification…
+                </option>
+                <option value="Minimal">Minimal</option>
+                <option value="Confidential">Confidential</option>
+                <option value="Restricted">Restricted</option>
+                <option value="Classified">Classified</option>
+                <option value="Operational">Operational</option>
+                <option value="Top Secret">Top Secret</option>
+                <option value="Redline">Redline</option>
+              </select>
+            </label>
+
             <input
               aria-label="Linked Organizations (comma separated)"
               placeholder="Linked Organizations (comma separated)"

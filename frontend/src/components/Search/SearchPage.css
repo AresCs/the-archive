@@ -168,14 +168,13 @@ html, body {
 /* Results Grid */
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(5, 1fr);  gap: 1rem;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1600px) {
   .results-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
@@ -185,21 +184,26 @@ html, body {
   background-color: #0d0d0d;
   border: 1px solid #00ffff;
   border-radius: 10px;
-  padding: 1rem;
+  padding: 0.75rem;          /* less padding */
   color: cyan;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
+  height: auto;              /* let it size naturally */
 }
 
 .card-content {
-  margin-bottom: 1rem;
-  flex-grow: 1;
+  margin-bottom: 0.5rem;     /* smaller gap */
+  flex-grow: 0;              /* don’t force stretching */
 }
 
 .result-card h2 {
   color: #00ffff;
+  margin: 0.25rem 0;         /* tighten heading spacing */
+}
+
+.result-card p {
+  margin: 0.2rem 0;          /* tighten line spacing */
 }
 
 /* Matrix Background Canvas */

@@ -129,6 +129,7 @@ export default function IntelFilesPage() {
   const [linkedOrganizations, setLinkedOrganizations] = useState("");
   const [linkedOperations, setLinkedOperations] = useState("");
   const [createdBy, setCreatedBy] = useState("");
+  const [blackmailMaterial, setBlackmailMaterial] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleNewIntelSave = useCallback(async () => {
@@ -145,12 +146,15 @@ export default function IntelFilesPage() {
       title: title.trim(),
       summary: summary.trim(),
       linked_persons: toLines(linkedPersons),
+      blackmail_material: blackmailMaterial.trim() || undefined,
+      linked_reports: toLines(linkedReports),
       operation_code: operationCode.trim() || undefined,
       status: status || undefined,
-      linked_reports: toLines(linkedReports),
       source: sourceVal.trim() || undefined,
       collection_method: collectionMethod.trim() || undefined,
       classification: classification.trim() || undefined,
+      linked_organizations: toLines(linkedOrganizations),
+      linked_operations: toLines(linkedOperations),
       created_by: createdBy.trim() || undefined,
       last_updated: new Date().toISOString(),
     };
@@ -170,6 +174,7 @@ export default function IntelFilesPage() {
       };
       setIntelData((prev) => [...prev, doc]);
       setCreatingIntel(false);
+      // clear form
       setTitle("");
       setSummary("");
       setLinkedPersons("");
@@ -182,6 +187,7 @@ export default function IntelFilesPage() {
       setLinkedOrganizations("");
       setLinkedOperations("");
       setCreatedBy("");
+      setBlackmailMaterial("");
     } catch {
       window.alert("Error saving intel.");
     } finally {
@@ -191,12 +197,15 @@ export default function IntelFilesPage() {
     title,
     summary,
     linkedPersons,
+    blackmailMaterial,
+    linkedReports,
     operationCode,
     status,
-    linkedReports,
     sourceVal,
     collectionMethod,
     classification,
+    linkedOrganizations,
+    linkedOperations,
     createdBy,
   ]);
 
@@ -224,9 +233,10 @@ export default function IntelFilesPage() {
     setESourceVal(selectedIntel.source ?? "");
     setECollectionMethod(selectedIntel.collection_method ?? "");
     setEClassification(selectedIntel.classification ?? "");
-    setELinkedOrganizations("");
-    setELinkedOperations("");
+    setELinkedOrganizations(toCsv(selectedIntel.linked_organizations));
+    setELinkedOperations(toCsv(selectedIntel.linked_operations));
     setECreatedBy(selectedIntel.created_by ?? "");
+    setEBlackmailMaterial(selectedIntel.blackmail_material ?? "");
     setEditingIntel(selectedIntel);
     setSelectedIntel(null);
   }, [selectedIntel]);
@@ -243,6 +253,7 @@ export default function IntelFilesPage() {
   const [eLinkedOrganizations, setELinkedOrganizations] = useState("");
   const [eLinkedOperations, setELinkedOperations] = useState("");
   const [eCreatedBy, setECreatedBy] = useState("");
+  const [eBlackmailMaterial, setEBlackmailMaterial] = useState("");
 
   const saveEdit = useCallback(async () => {
     if (!editingIntel) return;
@@ -251,12 +262,15 @@ export default function IntelFilesPage() {
       title: eTitle.trim(),
       summary: eSummary.trim(),
       linked_persons: toLines(eLinkedPersons),
+      blackmail_material: eBlackmailMaterial.trim() || undefined,
+      linked_reports: toLines(eLinkedReports),
       operation_code: eOperationCode.trim() || undefined,
       status: eStatus || undefined,
-      linked_reports: toLines(eLinkedReports),
       source: eSourceVal.trim() || undefined,
       collection_method: eCollectionMethod.trim() || undefined,
       classification: eClassification.trim() || undefined,
+      linked_organizations: toLines(eLinkedOrganizations),
+      linked_operations: toLines(eLinkedOperations),
       created_by: eCreatedBy.trim() || undefined,
       last_updated: new Date().toISOString(),
     };
@@ -286,12 +300,15 @@ export default function IntelFilesPage() {
     eTitle,
     eSummary,
     eLinkedPersons,
+    eBlackmailMaterial,
+    eLinkedReports,
     eOperationCode,
     eStatus,
-    eLinkedReports,
     eSourceVal,
     eCollectionMethod,
     eClassification,
+    eLinkedOrganizations,
+    eLinkedOperations,
     eCreatedBy,
   ]);
 
@@ -364,41 +381,65 @@ export default function IntelFilesPage() {
                 <div className="intel-card-header">
                   {doc.title || "Untitled"}
                 </div>
+
                 <div className="intel-card-summary">{doc.summary || "—"}</div>
+
+                {/* Meta row: just pills + date */}
                 <div className="intel-card-meta">
                   <span className="intel-pill">
                     {doc.operation_code || "—"}
                   </span>
                   <span className="intel-pill">{doc.status || "—"}</span>
-                  <span className="intel-pill">
-                    {doc.linked_persons?.length
-                      ? doc.linked_persons.join(", ")
-                      : "—"}
-                  </span>
                   <span className="intel-card-date">
                     {fmtDate(doc.last_updated) || "—"}
                   </span>
                 </div>
-                {doc.linked_reports?.length ? (
+
+                {/* Linked entities (outside the pill row) */}
+                {doc.linked_persons?.length || doc.linked_reports?.length ? (
                   <div className="intel-card-actions">
-                    <p className="intel-linked">
-                      Linked reports:&nbsp;
-                      {doc.linked_reports.map((r, i) => (
-                        <button
-                          key={`${r}-${i}`}
-                          className="intel-link"
-                          type="button"
-                          onClick={() => {
-                            setSelectedIntel(null);
-                            setSearchQuery(r);
-                          }}
-                        >
-                          {r}
-                        </button>
-                      ))}
-                    </p>
+                    {doc.linked_persons?.length ? (
+                      <p className="intel-linked">
+                        Linked persons:&nbsp;
+                        {doc.linked_persons.map((p, i) => (
+                          <button
+                            key={`${p}-${i}`}
+                            className="intel-link"
+                            type="button"
+                            onClick={() => {
+                              setSelectedIntel(null);
+                              navigate(
+                                `/search?query=${encodeURIComponent(p)}`
+                              );
+                            }}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </p>
+                    ) : null}
+
+                    {doc.linked_reports?.length ? (
+                      <p className="intel-linked">
+                        Linked reports:&nbsp;
+                        {doc.linked_reports.map((r, i) => (
+                          <button
+                            key={`${r}-${i}`}
+                            className="intel-link"
+                            type="button"
+                            onClick={() => {
+                              setSelectedIntel(null);
+                              setSearchQuery(r);
+                            }}
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </p>
+                    ) : null}
                   </div>
                 ) : null}
+
                 <button
                   className="intel-view-btn"
                   onClick={() => setSelectedIntel(doc)}
@@ -455,6 +496,7 @@ export default function IntelFilesPage() {
           linkedOrganizations={linkedOrganizations}
           linkedOperations={linkedOperations}
           createdBy={createdBy}
+          blackmailMaterial={blackmailMaterial}
           onTitleChange={setTitle}
           onSummaryChange={setSummary}
           onLinkedPersonsChange={setLinkedPersons}
@@ -467,6 +509,7 @@ export default function IntelFilesPage() {
           onLinkedOrganizationsChange={setLinkedOrganizations}
           onLinkedOperationsChange={setLinkedOperations}
           onCreatedByChange={setCreatedBy}
+          onBlackmailMaterialChange={setBlackmailMaterial}
           onCancel={() => setCreatingIntel(false)}
           onSave={handleNewIntelSave}
           submitting={submitting}
@@ -505,6 +548,7 @@ export default function IntelFilesPage() {
           linkedOrganizations={eLinkedOrganizations}
           linkedOperations={eLinkedOperations}
           createdBy={eCreatedBy}
+          blackmailMaterial={eBlackmailMaterial}
           onTitleChange={setETitle}
           onSummaryChange={setESummary}
           onLinkedPersonsChange={setELinkedPersons}
@@ -517,9 +561,10 @@ export default function IntelFilesPage() {
           onLinkedOrganizationsChange={setELinkedOrganizations}
           onLinkedOperationsChange={setELinkedOperations}
           onCreatedByChange={setECreatedBy}
+          onBlackmailMaterialChange={setEBlackmailMaterial}
           onCancel={() => setEditingIntel(null)}
           onSave={saveEdit}
-          submitting={editSaving}
+          saving={editSaving} // <-- bugfix (was "submitting")
         />
       )}
 

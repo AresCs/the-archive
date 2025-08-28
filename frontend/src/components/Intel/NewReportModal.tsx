@@ -13,6 +13,8 @@ type Props = {
   linkedOrganizations: string;
   linkedOperations: string;
   createdBy: string;
+  blackmailMaterial: string;
+  onBlackmailMaterialChange: (v: string) => void;
   onTitleChange: (v: string) => void;
   onSummaryChange: (v: string) => void;
   onLinkedPersonsChange: (v: string) => void;
@@ -25,7 +27,6 @@ type Props = {
   onLinkedOrganizationsChange: (v: string) => void;
   onLinkedOperationsChange: (v: string) => void;
   onCreatedByChange: (v: string) => void;
-  /** NOTE: renamed from onSubmit -> onSave to match IntelFilesPage.tsx */
   onSave: () => void;
   onCancel: () => void;
   submitting: boolean;
@@ -44,6 +45,8 @@ export default function NewReportModal({
   linkedOrganizations,
   linkedOperations,
   createdBy,
+  blackmailMaterial,
+  onBlackmailMaterialChange,
   onTitleChange,
   onSummaryChange,
   onLinkedPersonsChange,
@@ -101,12 +104,27 @@ export default function NewReportModal({
               value={collectionMethod}
               onChange={(e) => onCollectionMethodChange(e.target.value)}
             />
-            <input
-              aria-label="Classification"
-              placeholder="Classification"
-              value={classification}
-              onChange={(e) => onClassificationChange(e.target.value)}
-            />
+            <label style={{ display: "block", marginTop: "0.5rem" }}>
+              <span className="sr-only">Classification</span>
+              <select
+                aria-label="Classification"
+                value={classification}
+                onChange={(e) => onClassificationChange(e.target.value)}
+                className="intel-select"
+              >
+                <option value="" disabled>
+                  Select classification…
+                </option>
+                <option value="Minimal">Minimal</option>
+                <option value="Confidential">Confidential</option>
+                <option value="Restricted">Restricted</option>
+                <option value="Classified">Classified</option>
+                <option value="Operational">Operational</option>
+                <option value="Top Secret">Top Secret</option>
+                <option value="Redline">Redline</option>
+              </select>
+            </label>
+
             <input
               aria-label="Linked Org (comma separated)"
               placeholder="Linked Org (comma separated)"
@@ -118,6 +136,12 @@ export default function NewReportModal({
               placeholder="Linked Operation (comma separated)"
               value={linkedOperations}
               onChange={(e) => onLinkedOperationsChange(e.target.value)}
+            />
+            <input
+              aria-label="Blackmail Material"
+              placeholder="Blackmail Material"
+              value={blackmailMaterial}
+              onChange={(e) => onBlackmailMaterialChange(e.target.value)}
             />
           </section>
 

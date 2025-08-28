@@ -614,3 +614,38 @@ html, body, #root {
   .intel-title { font-size: 1.7rem; }
   .intel-content { padding-top: 238px; }
 }
+
+
+.intel-detail-modal select,
+.entry-form-modal select {
+  width: 100%;
+  background-color: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--cyan-dim);
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  font-family: "Courier New", monospace;
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(0,255,255,0.06);
+  margin-top: 0.5rem;
+}
+
+.intel-detail-modal select:focus,
+.entry-form-modal select:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(0,255,255,0.15);
+}
+
+/* optional: visually hide the label text if you keep the <span class="sr-only"> */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,1px,1px);
+  white-space: nowrap;
+  border: 0;
+}

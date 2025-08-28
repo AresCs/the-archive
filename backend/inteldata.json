@@ -1,6 +1,30 @@
 [
   {
+    "title": "Information Dump",
+    "summary": "Time for information dump",
+    "linked_persons": [
+      "N/A"
+    ],
+    "linked_reports": [
+      "N/A"
+    ],
+    "operation_code": "INF-928",
+    "status": "Ongoing",
+    "collection_method": "Radios/ In person Experiences.",
+    "created_by": "Blackwire",
+    "last_updated": "2025-08-28T03:03:59.026Z",
     "id": 1,
+    "classification": "Confidential",
+    "source": "N/A",
+    "linked_organizations": [
+      "N/A"
+    ],
+    "linked_operations": [
+      "N/A"
+    ]
+  },
+  {
+    "id": 2,
     "title": "Night Market Test",
     "summary": "Two masked parties exchanged a hard case at the East Night Market. Handoff lasted ~8 seconds; one party arrived and left through staff-only corridors.",
     "linked_persons": [
@@ -12,111 +36,16 @@
     "operation_code": "OP-REDCROW-23",
     "source": "Drone-12 (Agent Grey tasking)",
     "collection_method": "Thermal Drone Recon",
-    "classification": "Sensitive",
+    "classification": "Redline",
     "linked_organizations": [
       "Most Wanted"
     ],
     "linked_operations": [
       "OP-OBSIDIAN-11"
     ],
-    "last_updated": "2025-08-25T08:14:24Z",
+    "last_updated": "2025-08-28T03:04:04.450Z",
     "created_by": "Agent Greys",
     "status": "Ongoing",
-    "internal_flags": []
-  },
-  {
-    "id": 2,
-    "title": "Dockside Meet Suspected Informant Contact",
-    "summary": "High-ranking MW figure met with an unknown driver at Berth 42. Short conversation, vehicle never powered down.",
-    "linked_persons": [
-      "SuperNova",
-      "Unknown (Driver)"
-    ],
-    "blackmail_material": "Plate image cross-matches a sealed asset list.",
-    "linked_reports": [],
-    "operation_code": "OP-TIDELINE-07",
-    "source": "Harbor CCTV (mirrored)",
-    "collection_method": "CCTV Pull + Long-lens",
-    "classification": "Confirmed",
-    "linked_organizations": [
-      "Most Wanted"
-    ],
-    "linked_operations": [
-      "OP-REDCROW-23"
-    ],
-    "last_updated": "2025-08-22T20:23:36.727Z",
-    "created_by": "Agent V",
-    "status": "Open"
-  },
-  {
-    "id": 3,
-    "title": "Shortwave Bursts MW Cipher Variant",
-    "summary": "Three shortwave bursts at 7.021 MHz matched a Most Wanted derivative key. Pattern suggests staging call.",
-    "linked_persons": [
-      "MNM",
-      "Monkeyman"
-    ],
-    "blackmail_material": "Emitter triangulated within 400m of Legion Square garage roof.",
-    "linked_reports": [],
-    "operation_code": "OP-SKYHOOK-19",
-    "source": "SIGINT Van-3",
-    "collection_method": "Signals Intel",
-    "classification": "Unverified",
-    "linked_organizations": [
-      "Most Wanted"
-    ],
-    "linked_operations": [
-      "OP-OBSIDIAN-11"
-    ],
-    "last_updated": "2025-08-22T20:23:39.795Z",
-    "created_by": "Agent Lynx",
-    "status": "Open"
-  },
-  {
-    "id": 4,
-    "title": "Shell Chain Lease Warehouse Node",
-    "summary": "A three-layer shell company secured a 24/7-access lease near Little Seoul freight spur; matches prior logistics nodes.",
-    "linked_persons": [
-      "Evelyn Rook"
-    ],
-    "blackmail_material": "",
-    "linked_reports": [],
-    "operation_code": "OP-OBSIDIAN-11",
-    "source": "Registrar Pull + Field Check",
-    "collection_method": "Records Intel + Recon",
-    "classification": "Confirmed",
-    "linked_organizations": [
-      "Obsidian Holdings LLC",
-      "Most Wanted"
-    ],
-    "linked_operations": [
-      "OP-REDCROW-23"
-    ],
-    "last_updated": "2025-08-22T20:23:42.757Z",
-    "created_by": "Agent Crow",
-    "status": "Ongoing"
-  },
-  {
-    "id": 5,
-    "title": "Cafe Handoff Envelope Exchange",
-    "summary": "Primary met unknown female at Midtown Cafe and passed a thin envelope under the table.",
-    "linked_persons": [
-      "Kira Wong",
-      "Ariel Knight"
-    ],
-    "blackmail_material": "Clear image of envelope corner visible in seat gap.",
-    "linked_reports": [],
-    "operation_code": "OP-PARABOLIC-05",
-    "source": "Table mic + Cafe CCTV",
-    "collection_method": "Undercover + CCTV",
-    "classification": "Sensitive",
-    "linked_organizations": [],
-    "linked_operations": [
-      "OP-REDCROW-23"
-    ],
-    "last_updated": "2025-08-25T08:14:28Z",
-    "created_by": "Agent Grey",
-    "status": "Closed",
     "internal_flags": []
   }
 ]
