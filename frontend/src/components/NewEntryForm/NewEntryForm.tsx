@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Person } from "../../types";
 import "./NewEntryForm.css";
 
@@ -16,11 +16,48 @@ const splitToArray = (value: string): string[] =>
 
 const joinMultiline = (arr?: string[]) => (arr && arr.length ? arr.join("\n") : "");
 
+/* ---- Read agent from localStorage & format a display name ---- */
+type AgentLite = { id?: number; name?: string; username?: string; display_name?: string };
+function getCurrentAgent(): AgentLite | null {
+  try {
+    const raw = localStorage.getItem("agent");
+    if (!raw) return null;
+    return JSON.parse(raw) as AgentLite;
+  } catch {
+    return null;
+  }
+}
+function agentDisplay(a: AgentLite | null): string | undefined {
+  if (!a) return undefined;
+  return a.name || a.display_name || a.username || (a.id ? `Agent#${a.id}` : undefined);
+}
+
+/* ---- Time helpers ---- */
+function nowIso(): string {
+  return new Date().toISOString();
+}
+function prettyTime(iso?: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
+}
+
 export default function NewEntryForm({ initialData, onClose, onSubmit }: Props) {
   const [formData, setFormData] = useState<Partial<Person>>({
     suspected_informant: "unknown",
     ...initialData,
   });
+
+  // Initialize Created By + Last Updated on mount (only if missing)
+  useEffect(() => {
+    const actor = agentDisplay(getCurrentAgent());
+    setFormData((prev) => ({
+      ...prev,
+      created_by: prev.created_by && prev.created_by.trim() ? prev.created_by : actor,
+      last_updated: prev.last_updated || nowIso(),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once
 
   const [snapshotsText, setSnapshotsText] = useState<string>(
     joinMultiline(initialData.cctv_snapshots)
@@ -77,10 +114,12 @@ export default function NewEntryForm({ initialData, onClose, onSubmit }: Props) 
       blackmail_material: formData.blackmail_material,
       linked_reports: formData.linked_reports ?? [],
 
+      // created_by is auto-filled; last_updated is always stamped "now"
       created_by: formData.created_by,
-      last_updated: formData.last_updated,
+      last_updated: nowIso(),
       internal_flags: formData.internal_flags ?? [],
-      access_level: formData.access_level ?? "public",
+      access_level: formData.access_level ?? "minimal",
+      updated_by: formData.updated_by || "",
     };
 
     onSubmit(normalized);
@@ -378,22 +417,27 @@ export default function NewEntryForm({ initialData, onClose, onSubmit }: Props) 
 
           <h3>Metadata</h3>
 
+          {/* Created By (auto-filled and read-only) */}
           <div className="input-group">
             <label htmlFor="created_by">Created By</label>
             <input
               id="created_by"
               value={formData.created_by || ""}
-              onChange={(e) => handleChange("created_by", e.target.value)}
+              readOnly
+              disabled
+              title="Auto-filled from your login"
             />
           </div>
 
+          {/* Last Updated (auto-stamped, read-only) */}
           <div className="input-group">
             <label htmlFor="last_updated">Last Updated</label>
             <input
               id="last_updated"
-              type="date"
-              value={formData.last_updated || ""}
-              onChange={(e) => handleChange("last_updated", e.target.value)}
+              value={prettyTime(formData.last_updated)}
+              readOnly
+              disabled
+              title="Auto-stamped from your computer time"
             />
           </div>
 
@@ -429,14 +473,25 @@ export default function NewEntryForm({ initialData, onClose, onSubmit }: Props) 
               onChange={(e) =>
                 handleChange(
                   "access_level",
-                  e.target.value as "public" | "agent-only" | "handler-only"
+                  e.target.value as
+                    | "minimal"
+                    | "confidential"
+                    | "restricted"
+                    | "classified"
+                    | "operational"
+                    | "topsecret"
+                    | "redline"
                 )
               }
             >
               <option value="">-- Select Access Level --</option>
-              <option value="public">Public</option>
-              <option value="agent-only">Agent Only</option>
-              <option value="handler-only">Handler Only</option>
+              <option value="minimal">Minimal</option>
+              <option value="confidential">Confidential</option>
+              <option value="restricted">Restricted</option>
+              <option value="classified">Classified</option>
+              <option value="operational">Operational</option>
+              <option value="topsecret">Top Secret</option>
+              <option value="redline">Redline</option>
             </select>
           </div>
         </div>

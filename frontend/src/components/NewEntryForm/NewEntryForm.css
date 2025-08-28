@@ -298,3 +298,82 @@
   white-space: pre-wrap;  /* show linebreaks if any styling overrides occur */
   resize: vertical;    /* allow the user to expand if they want */
 }
+
+/* 1) Make the columns a true grid with safe gutters */
+.columns-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem; /* space between the three panels */
+}
+
+/* 2) Ensure each panel (column) contains its children */
+.entry-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;         /* <-- lets children shrink instead of overflow */
+  overflow: hidden;     /* hard stop for any stray overflow */
+}
+
+/* 3) Inputs never exceed their parent */
+.input-group input,
+.input-group textarea,
+.input-group select {
+  width: 100%;
+  max-width: 100%;      /* prevent overshoot beyond the “guide” border */
+  box-sizing: border-box;
+}
+
+/* 4) Consistent textareas */
+.input-group textarea {
+  min-height: 2.75rem;
+  resize: vertical;     /* allow vertical only; avoids horizontal creep */
+  overflow: auto;
+  line-height: 1.4;
+}
+
+/* 5) Labels + spacing */
+.input-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 6) Vehicle rows: use grid, not free-form inline inputs */
+.vehicle-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.vehicle-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto; /* 4 fields + delete btn */
+  gap: 0.5rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.vehicle-row input {
+  min-width: 0; /* enables shrinking so long values don't overflow */
+}
+
+.NewEntryForm-delete-vehicle {
+  white-space: nowrap;
+}
+
+/* 7) Read-only/disabled fields (e.g., Created By) look intentional */
+input[disabled],
+select[disabled],
+textarea[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* 8) Mobile fallback: stack columns */
+@media (max-width: 1100px) {
+  .columns-wrapper {
+    grid-template-columns: 1fr;
+  }
+}

@@ -87,7 +87,6 @@ export default function Login({ onLogin }: Props) {
       img.style.top = `${y}px`;
 
       layer.appendChild(img);
-      // fade-in
       requestAnimationFrame(() => img.classList.add("in"));
 
       const visibleMs = Math.floor(Math.random() * 4000) + 2800;
@@ -112,7 +111,6 @@ export default function Login({ onLogin }: Props) {
         window.clearTimeout(spawnTimerRef.current);
         spawnTimerRef.current = null;
       }
-      // clean up any eyes currently on the layer
       layer.querySelectorAll<HTMLImageElement>(".shadow-eye").forEach((el) => {
         const e = el as EyeElement;
         if (e.__removeTimer) window.clearTimeout(e.__removeTimer);
@@ -140,6 +138,7 @@ export default function Login({ onLogin }: Props) {
         return;
       }
       onLogin(user);
+      localStorage.setItem("agent", JSON.stringify(user));
       navigate("/home");
     } catch (err) {
       console.error("Login error:", err);
@@ -156,7 +155,6 @@ export default function Login({ onLogin }: Props) {
         />
       )}
 
-      {/* Login viewport (centered content) */}
       <div className={`login-viewport ${showLogin ? "is-visible" : ""}`}>
         <h1 className="login-title glitch">The Archive</h1>
 
@@ -187,7 +185,6 @@ export default function Login({ onLogin }: Props) {
         </div>
       </div>
 
-      {/* Eyes layer (activates when login is visible) */}
       <div
         ref={eyesLayerRef}
         className={`eyes-layer ${showLogin ? "active" : ""}`}

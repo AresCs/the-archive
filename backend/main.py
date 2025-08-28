@@ -359,18 +359,22 @@ def create_person(payload: PersonRecord) -> Dict[str, Any]:
         payload["id"] = _next_person_id(people)
     else:
         try:
-            new_id = int(payload["id"])  # type: ignore[arg-type]
+            new_id = int(payload["id"])
         except Exception:
             raise HTTPException(400, detail="ID must be an integer")
         payload["id"] = new_id
         for p in people:
             if int(p.get("id", -1)) == new_id:
                 raise HTTPException(409, detail="A person with this ID already exists")
+
     payload.setdefault("created_by", "system")
-    payload["last_updated"] = _today_str()
+    # ✅ Full ISO datetime instead of date-only
+    payload["last_updated"] = _now_iso()
+
     people.append(payload)
     save_people(people)
     return {"message": "created", "person": payload}
+
 
 @app.put("/api/update/{person_id}")
 def update_person(person_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -381,14 +385,16 @@ def update_person(person_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
             updated = dict(p)
             updated.update(payload)
             try:
-                updated["id"] = int(updated.get("id", p["id"]))  # keep integer ID
+                updated["id"] = int(updated.get("id", p["id"]))
             except Exception:
                 updated["id"] = p["id"]
-            updated["last_updated"] = _today_str()
-            people[idx] = updated  # type: ignore[index]
+            # ✅ Full ISO datetime instead of date-only
+            updated["last_updated"] = _now_iso()
+            people[idx] = updated
             save_people(people)
             return {"message": "updated", "person": updated}
     raise HTTPException(404, detail="Person not found")
+
 
 @app.delete("/api/delete/{person_id}")
 def delete_person(person_id: str) -> Dict[str, Any]:

@@ -14,9 +14,13 @@ interface PersonDetailsProps {
 }
 
 const ACCESS_RANK: Record<NonNullable<Person["access_level"]>, number> = {
-  public: 0,
-  "agent-only": 1,
-  "handler-only": 2,
+  minimal: 0,
+  confidential: 1,
+  restricted: 2,
+  classified: 3,
+  operational: 4,
+  topsecret: 5,
+  redline: 6,
 };
 
 const CLEARANCE_RANK: Record<Clearance, number> = {
@@ -27,7 +31,7 @@ const CLEARANCE_RANK: Record<Clearance, number> = {
 };
 
 function canView(person: Person, viewer: Clearance = "agent") {
-  const needed = ACCESS_RANK[person.access_level ?? "public"];
+  const needed = ACCESS_RANK[person.access_level ?? "minimal"];
   const viewerRank = CLEARANCE_RANK[viewer];
   return viewerRank >= needed;
 }
@@ -74,11 +78,14 @@ export default function PersonDetails({
     if (person.id === undefined) return;
     setPriorityBusy(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/people/${person.id}/priority`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ high_priority: !isHighPriority }),
-      });
+      const res = await fetch(
+        `http://localhost:8000/api/people/${person.id}/priority`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ high_priority: !isHighPriority }),
+        }
+      );
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
       const data: unknown = await res.json();
       if (data && typeof data === "object") {
@@ -106,9 +113,35 @@ export default function PersonDetails({
   };
 
   const lastUpdatedPretty = useMemo(() => {
-    if (!person.last_updated) return undefined;
-    const d = new Date(person.last_updated);
-    return Number.isNaN(d.getTime()) ? person.last_updated : d.toLocaleString();
+    const raw = person.last_updated;
+    if (!raw) return undefined;
+
+    // Case 1: date-only (YYYY-MM-DD) -> show just the date
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      const d = new Date(`${raw}T00:00:00`); // local midnight; we only display the date
+      return d.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    }
+
+    // Case 2: full timestamp (with or without zone) -> show local datetime with TZ
+    const d = new Date(raw); // keep browser's native handling; no forced UTC
+    if (Number.isNaN(d.getTime())) return raw;
+
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return d.toLocaleString(undefined, {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+      timeZone: tz,
+      timeZoneName: "short",
+    });
   }, [person.last_updated]);
 
   return (
@@ -116,7 +149,9 @@ export default function PersonDetails({
       <div className="person-details-container">
         {/* Header */}
         <div className="person-header">
-          {person.image_url && <img src={person.image_url} alt={person.full_name} />}
+          {person.image_url && (
+            <img src={person.image_url} alt={person.full_name} />
+          )}
           <div className="person-title-inline">
             <h2>{person.full_name}</h2>
             <div className="flag-container">
@@ -124,7 +159,9 @@ export default function PersonDetails({
                 <span className="flag flag-danger">High Priority</span>
               )}
               {person.gang_affiliation && (
-                <span className="flag flag-gang">{person.gang_affiliation}</span>
+                <span className="flag flag-gang">
+                  {person.gang_affiliation}
+                </span>
               )}
               {person.suspected_informant && (
                 <span
@@ -143,31 +180,6 @@ export default function PersonDetails({
           </div>
         </div>
 
-        {/* Basic Info */}
-        <div className="person-section">
-          <h3>Basic Info</h3>
-          {person.dob && (
-            <p>
-              <strong>DOB:</strong> {person.dob}
-            </p>
-          )}
-          {person.gender && (
-            <p>
-              <strong>Gender:</strong> {person.gender}
-            </p>
-          )}
-          {person.nationality && (
-            <p>
-              <strong>Nationality:</strong> {person.nationality}
-            </p>
-          )}
-          {person.current_address && (
-            <p>
-              <strong>Address:</strong> {person.current_address}
-            </p>
-          )}
-          <ListRow label="Aliases" items={person.known_aliases} />
-        </div>
 
         {/* Network */}
         <div className="person-section">
@@ -239,7 +251,10 @@ export default function PersonDetails({
                     onBlur={() => setPreviewUrl(null)}
                     title="Open full image in new tab"
                   >
-                    <img src={src} alt={`CCTV ${i + 1} for ${person.full_name}`} />
+                    <img
+                      src={src}
+                      alt={`CCTV ${i + 1} for ${person.full_name}`}
+                    />
                   </a>
                 ))}
               </div>
@@ -289,25 +304,33 @@ export default function PersonDetails({
           <h3>Meta</h3>
           {person.created_by && (
             <p>
-              <strong>By:</strong> {person.created_by}
+              <strong>Created by:</strong> {person.created_by}
+            </p>
+          )}
+          {person.updated_by && (
+            <p>
+              <strong>Last updated by:</strong> {person.updated_by}
             </p>
           )}
           {lastUpdatedPretty && (
             <p>
-              <strong>Updated:</strong> {lastUpdatedPretty}
+              <strong>Last updated:</strong> {lastUpdatedPretty}
             </p>
           )}
+
           {isHighPriority && person.high_priority_at && (
             <p>
               <strong>High Priority Since:</strong>{" "}
               {new Date(person.high_priority_at).toLocaleString()}
             </p>
           )}
-          {person.internal_flags?.length
-            ? allowed
-              ? <ListRow label="Flags" items={person.internal_flags} />
-              : <Redacted label="Flags" />
-            : null}
+          {person.internal_flags?.length ? (
+            allowed ? (
+              <ListRow label="Flags" items={person.internal_flags} />
+            ) : (
+              <Redacted label="Flags" />
+            )
+          ) : null}
         </div>
 
         {/* Actions */}
@@ -319,11 +342,17 @@ export default function PersonDetails({
             className={`priority-button ${isHighPriority ? "on" : ""}`}
             onClick={toggleHighPriority}
             disabled={person.id === undefined || priorityBusy}
-            title={isHighPriority ? "Unmark High Priority" : "Mark High Priority"}
+            title={
+              isHighPriority ? "Unmark High Priority" : "Mark High Priority"
+            }
             aria-pressed={isHighPriority}
             aria-busy={priorityBusy}
           >
-            {priorityBusy ? "Saving…" : isHighPriority ? "Unmark High Priority" : "Mark High Priority"}
+            {priorityBusy
+              ? "Saving…"
+              : isHighPriority
+              ? "Unmark High Priority"
+              : "Mark High Priority"}
           </button>
           <button
             className="delete-button"

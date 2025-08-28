@@ -38,7 +38,7 @@
     ],
     "blackmail_material": "N/A",
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-25",
+    "last_updated": "2025-08-28T04:00:15Z",
     "access_level": "agent-only",
     "image_url": "",
     "internal_flags": [
@@ -47,7 +47,9 @@
     "linked_reports": [],
     "last_known_location": "N/A",
     "personality_notes": "N/A",
-    "behavioral_patterns": "N/A"
+    "behavioral_patterns": "N/A",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Kira Wong",
@@ -73,7 +75,7 @@
       }
     ],
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-25",
+    "last_updated": "2025-08-28T04:00:05Z",
     "access_level": "handler-only",
     "internal_flags": [
       "Person of Interest"
@@ -108,7 +110,9 @@
     "last_known_location": "N/A",
     "personality_notes": "N/A",
     "behavioral_patterns": "N/A",
-    "blackmail_material": "N/A"
+    "blackmail_material": "N/A",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Regina Raine",
@@ -117,7 +121,25 @@
     "recent_contacts": [
       "5551877127"
     ],
-    "id": 10
+    "id": 10,
+    "created_by": "Agent Blackwire",
+    "image_url": "",
+    "known_aliases": [],
+    "known_associates": [],
+    "organization_ties": [],
+    "suspected_informant": "unknown",
+    "known_vehicles": [],
+    "radio_frequencies": [],
+    "tracked_devices": [],
+    "recent_movements": [],
+    "cctv_snapshots": [],
+    "intercepted_audio": [],
+    "linked_reports": [],
+    "last_updated": "2025-08-28T03:59:54Z",
+    "internal_flags": [],
+    "access_level": "minimal",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Johnny Lin",
@@ -146,8 +168,10 @@
     "internal_flags": [],
     "access_level": "public",
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-25",
-    "current_address": "Mirror Park"
+    "last_updated": "2025-08-28T04:00:09Z",
+    "current_address": "Mirror Park",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Wombat",
@@ -167,8 +191,11 @@
     "intercepted_audio": [],
     "linked_reports": [],
     "internal_flags": [],
+    "created_by": "Agent Blackwire",
     "access_level": "public",
-    "last_updated": "2025-08-28"
+    "last_updated": "2025-08-28T03:59:31Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "known_associates": [],
@@ -189,7 +216,10 @@
     "linked_reports": [],
     "internal_flags": [],
     "access_level": "public",
-    "last_updated": "2025-08-28"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T03:59:56Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "image_url": "",
@@ -221,7 +251,9 @@
     "id": 16,
     "nationality": "",
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-28"
+    "last_updated": "2025-08-28T03:59:41Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "image_url": "",
@@ -247,8 +279,11 @@
     "linked_reports": [],
     "internal_flags": [],
     "access_level": "public",
+    "created_by": "Agent Blackwire",
     "id": 17,
-    "last_updated": "2025-08-28"
+    "last_updated": "2025-08-28T04:00:11Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Melody Burke",
@@ -269,13 +304,15 @@
     "cctv_snapshots": [],
     "intercepted_audio": [],
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-25",
+    "last_updated": "2025-08-28T03:59:52Z",
     "access_level": "handler-only",
     "image_url": "",
     "internal_flags": [],
     "linked_reports": [],
     "id": 18,
-    "gang_affiliation": "EMS"
+    "gang_affiliation": "EMS",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Zekk Frost",
@@ -299,8 +336,10 @@
     "internal_flags": [],
     "linked_reports": [],
     "id": 19,
-    "created_by": "system",
-    "last_updated": "2025-08-25"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T03:59:36Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Caroline Walker",
@@ -324,8 +363,10 @@
     "internal_flags": [],
     "linked_reports": [],
     "id": 20,
-    "created_by": "system",
-    "last_updated": "2025-08-25"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T04:00:17Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Max Tyme",
@@ -343,7 +384,7 @@
     "intercepted_audio": [],
     "blackmail_material": "Activity doing races while on duty. ",
     "created_by": "Agent Blackwire",
-    "last_updated": "2025-08-25",
+    "last_updated": "2025-08-28T03:59:49Z",
     "access_level": "handler-only",
     "image_url": "",
     "internal_flags": [
@@ -351,7 +392,9 @@
     ],
     "linked_reports": [],
     "id": 21,
-    "gang_affiliation": "LSPD"
+    "gang_affiliation": "LSPD",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Chaim Yitzhaki",
@@ -373,8 +416,10 @@
     "internal_flags": [],
     "linked_reports": [],
     "id": 22,
-    "created_by": "system",
-    "last_updated": "2025-08-28"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T04:00:21Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Lee Jones",
@@ -396,8 +441,10 @@
     "internal_flags": [],
     "linked_reports": [],
     "id": 23,
-    "created_by": "system",
-    "last_updated": "2025-08-28"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T03:59:46Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Robert Slotts",
@@ -422,8 +469,10 @@
     "internal_flags": [],
     "linked_reports": [],
     "id": 24,
-    "created_by": "system",
-    "last_updated": "2025-08-28"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T03:59:44Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Ackwell Foley",
@@ -438,13 +487,15 @@
     "recent_movements": [],
     "cctv_snapshots": [],
     "intercepted_audio": [],
-    "access_level": "public",
+    "access_level": "minimal",
     "image_url": "",
     "internal_flags": [],
     "linked_reports": [],
     "id": 25,
-    "created_by": "system",
-    "last_updated": "2025-08-28"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T04:00:13Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Lavender Meadows",
@@ -464,8 +515,11 @@
     "internal_flags": [],
     "linked_reports": [],
     "id": 26,
-    "created_by": "system",
-    "last_updated": "2025-08-28"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T04:00:02Z",
+    "high_priority_at": "2025-08-28T03:59:58Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Darcie Love",
@@ -487,8 +541,10 @@
     "internal_flags": [],
     "linked_reports": [],
     "id": 27,
-    "created_by": "system",
-    "last_updated": "2025-08-28"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T04:00:23Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   },
   {
     "full_name": "Joseph Olosimo",
@@ -510,7 +566,9 @@
     "internal_flags": [],
     "linked_reports": [],
     "id": 28,
-    "created_by": "system",
-    "last_updated": "2025-08-28"
+    "created_by": "Agent Blackwire",
+    "last_updated": "2025-08-28T04:00:07Z",
+    "updated_by": "Agent Blackwire",
+    "updated_by_id": "001"
   }
 ]

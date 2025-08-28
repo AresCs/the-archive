@@ -1,4 +1,5 @@
 export type Person = {
+  updated_by: string;
   image_url?: string;
   id?: number;
   full_name: string;
@@ -30,7 +31,7 @@ export type Person = {
   created_by?: string;
   last_updated?: string;
   internal_flags?: string[];
-  access_level?: 'public' | 'agent-only' | 'handler-only';
+  access_level?: 'minimal' | 'confidential' | 'restricted' | 'classified' | 'operational' | 'topsecret' | 'redline';
   high_priority_at?: string; // ISO timestamp when flagged
 };
 

@@ -9,15 +9,29 @@ import { api } from "../../lib/api";
 
 type PersonResult = Person & { related_reports?: string[] };
 
+// ---- read current agent from localStorage ----
+type AgentLite = { id?: number; name?: string; username?: string; display_name?: string };
+function getCurrentAgent(): AgentLite | null {
+  try {
+    const raw = localStorage.getItem("agent");
+    if (!raw) return null;
+    return JSON.parse(raw) as AgentLite;
+  } catch {
+    return null;
+  }
+}
+function agentDisplay(a: AgentLite | null): string | undefined {
+  if (!a) return undefined;
+  return a.name || a.display_name || a.username || (a.id ? `Agent#${a.id}` : undefined);
+}
+
 export default function SearchPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // URL → state
   const initialQuery = (searchParams.get("query") ?? "").trim();
   const [query, setQuery] = useState<string>(initialQuery);
 
-  // Data / UI
   const [results, setResults] = useState<PersonResult[]>([]);
   const [editingPerson, setEditingPerson] = useState<Partial<Person> | null>(null);
   const [viewingPerson, setViewingPerson] = useState<Person | null>(null);
@@ -30,11 +44,9 @@ export default function SearchPage() {
     return new Date().getFullYear() - birthDate.getFullYear();
   };
 
-  // ---- API helpers ----
   const loadAll = useCallback(async () => {
     setSearching(true);
     try {
-      // /api/all returns { results: Person[] }
       const data = await api.get<{ results?: PersonResult[] } | PersonResult[]>("/api/all");
       const list = Array.isArray(data) ? data : (data?.results ?? []);
       setResults(list);
@@ -65,35 +77,27 @@ export default function SearchPage() {
     [loadAll]
   );
 
-  // ---- Initial mount behavior ----
   useEffect(() => {
     if (initialQuery) {
-      // sync state (in case spaces got trimmed)
       if (initialQuery !== query) setQuery(initialQuery);
       void searchPeople(initialQuery);
     } else {
       void loadAll();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once
+  }, []);
 
-  // ---- React to URL changes coming from elsewhere ----
   useEffect(() => {
     const q = (searchParams.get("query") ?? "").trim();
     if (q !== query) setQuery(q);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // ---- Debounced searching while typing (non-empty only) ----
   useEffect(() => {
     const trimmed = query.trim();
     const t = setTimeout(() => {
-      if (trimmed) {
-        void searchPeople(trimmed);
-      } else {
-        void loadAll();
-      }
-      // keep URL in sync
+      if (trimmed) void searchPeople(trimmed);
+      else void loadAll();
       setSearchParams((sp) => {
         if (trimmed) sp.set("query", trimmed);
         else sp.delete("query");
@@ -103,7 +107,6 @@ export default function SearchPage() {
     return () => clearTimeout(t);
   }, [query, searchPeople, loadAll, setSearchParams]);
 
-  // Delete person
   const handleDelete = async (id: number) => {
     try {
       await api.delete(`/api/delete/${id}`);
@@ -114,12 +117,35 @@ export default function SearchPage() {
     }
   };
 
-  // Create/update person
+  // ✅ Stamp created_by / updated_by / last_updated
   const saveEntry = async (newEntry: Person) => {
     const isEditingExisting = Boolean(editingPerson?.id);
     const idToUpdate =
       (editingPerson?.id as number | undefined) ?? (newEntry.id as number | undefined);
-    const payload: Person = isEditingExisting ? { ...newEntry, id: idToUpdate } : newEntry;
+
+    const agent = getCurrentAgent();
+    const actor = agentDisplay(agent);
+    const nowIso = new Date().toISOString();
+
+    const base: Record<string, unknown> = { ...(newEntry as unknown as Record<string, unknown>) };
+
+    let payload: Record<string, unknown>;
+    if (isEditingExisting && idToUpdate != null) {
+      payload = {
+        ...base,
+        id: idToUpdate,
+        updated_by_id: agent?.id ?? undefined,
+        updated_by: actor ?? undefined,
+        last_updated: nowIso,
+      };
+    } else {
+      payload = {
+        ...base,
+        created_by_id: agent?.id ?? undefined,
+        created_by: actor ?? undefined,
+        last_updated: nowIso,
+      };
+    }
 
     try {
       if (isEditingExisting && idToUpdate != null) {
@@ -140,7 +166,6 @@ export default function SearchPage() {
     [results]
   );
 
-  // Close delete-confirm on Escape
   useEffect(() => {
     if (confirmDeleteId === null) return;
     const onKey = (e: KeyboardEvent) => {
@@ -211,6 +236,14 @@ export default function SearchPage() {
                   </p>
                   <p>
                     <strong>Affiliation:</strong> {person.gang_affiliation || "None"}
+                  </p>
+                  {/* compact meta */}
+                  <p className="card-meta">
+                    <small>
+                      {person.updated_by
+                        ? `Last updated by ${person.updated_by}`
+                        : `Created by ${person.created_by || "—"}`}
+                    </small>
                   </p>
                 </div>
                 <button className="view-button" onClick={() => setViewingPerson(person)} type="button">
