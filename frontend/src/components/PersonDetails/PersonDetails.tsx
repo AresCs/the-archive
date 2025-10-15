@@ -79,11 +79,12 @@ export default function PersonDetails({
     setPriorityBusy(true);
     try {
       const res = await fetch(
-        `http://localhost:8000/api/people/${person.id}/priority`,
+        `${import.meta.env.VITE_API_URL}/api/people/${person.id}/priority`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ high_priority: !isHighPriority }),
+          credentials: "include", // <-- send the session cookie
         }
       );
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
@@ -179,7 +180,6 @@ export default function PersonDetails({
             </div>
           </div>
         </div>
-
 
         {/* Network */}
         <div className="person-section">

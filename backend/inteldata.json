@@ -12,7 +12,7 @@
     "status": "Ongoing",
     "collection_method": "Radios/ In person Experiences.",
     "created_by": "Blackwire",
-    "last_updated": "2025-08-28T03:03:59.026Z",
+    "last_updated": "2025-10-15T14:11:16Z",
     "id": 1,
     "classification": "Confidential",
     "source": "N/A",
@@ -21,7 +21,8 @@
     ],
     "linked_operations": [
       "N/A"
-    ]
+    ],
+    "internal_flags": []
   },
   {
     "id": 2,
@@ -43,7 +44,7 @@
     "linked_operations": [
       "OP-OBSIDIAN-11"
     ],
-    "last_updated": "2025-08-28T03:04:04.450Z",
+    "last_updated": "2025-10-15T14:11:18Z",
     "created_by": "Agent Greys",
     "status": "Ongoing",
     "internal_flags": []

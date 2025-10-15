@@ -90,10 +90,10 @@ function CsvLinks({
 /** ---------- Component ---------- */
 
 type Props = {
-  intel: IntelDoc;               // initial intel (used for id & initial render)
+  intel: IntelDoc; // initial intel (used for id & initial render)
   onClose: () => void;
   onDelete: () => void;
-  onEdit: () => void;            // you already have this; we keep it as-is
+  onEdit: () => void; // you already have this; we keep it as-is
   onNavigateReport: (reportIdOrTitle: string) => void;
   onNavigatePerson: (name: string) => void;
   fmtDate?: (s?: string) => string | undefined;
@@ -123,14 +123,17 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
     if (intel.id === undefined) return;
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/intel/${intel.id}`);
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/intel/${intel.id}`,
+        {
+          method: "GET",
+          credentials: "include", // <-- add this
+        }
+      );
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
       const json: unknown = await res.json();
-      if (isIntelEntryResponse(json)) {
-        setRecord(json.entry);
-      } else {
-        throw new Error("Unexpected response shape.");
-      }
+      if (isIntelEntryResponse(json)) setRecord(json.entry);
+      else throw new Error("Unexpected response shape.");
     } finally {
       setLoading(false);
     }
@@ -151,19 +154,27 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
   );
 
   const persons = useMemo(
-    () => toList((record as unknown as Record<string, unknown>)["linked_persons"]),
+    () =>
+      toList((record as unknown as Record<string, unknown>)["linked_persons"]),
     [record]
   );
   const reports = useMemo(
-    () => toList((record as unknown as Record<string, unknown>)["linked_reports"]),
+    () =>
+      toList((record as unknown as Record<string, unknown>)["linked_reports"]),
     [record]
   );
   const orgs = useMemo(
-    () => toList((record as unknown as Record<string, unknown>)["linked_organizations"]),
+    () =>
+      toList(
+        (record as unknown as Record<string, unknown>)["linked_organizations"]
+      ),
     [record]
   );
   const ops = useMemo(
-    () => toList((record as unknown as Record<string, unknown>)["linked_operations"]),
+    () =>
+      toList(
+        (record as unknown as Record<string, unknown>)["linked_operations"]
+      ),
     [record]
   );
 
@@ -178,6 +189,7 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ high_priority: !isHighPriority }),
+          credentials: "include", // <-- send the session cookie
         }
       );
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
@@ -206,6 +218,7 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(setFlagsOn(record, nextFlags)),
+        credentials: "include", // <-- send the session cookie
       });
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
       await refresh();
@@ -230,6 +243,7 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ high_priority: false }),
+            credentials: "include", // <-- send the session cookie
           }
         );
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
@@ -250,6 +264,7 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(setFlagsOn(record, nextFlags)),
+        credentials: "include", // <-- send the session cookie
       });
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
       await refresh();
@@ -314,7 +329,9 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
                 <div className="intel-detail-kv-row">
                   <div className="intel-detail-kv-key">Links</div>
                   <div className="intel-detail-kv-val">
-                    <div style={{ marginBottom: persons.length ? "0.5rem" : 0 }}>
+                    <div
+                      style={{ marginBottom: persons.length ? "0.5rem" : 0 }}
+                    >
                       <strong>Reports</strong>:{" "}
                       <CsvLinks items={reports} onClick={onNavigateReport} />
                     </div>
@@ -366,17 +383,13 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
               {orgs.length > 0 && (
                 <div className="intel-detail-kv-row">
                   <div className="intel-detail-kv-key">Organizations</div>
-                  <div className="intel-detail-kv-val">
-                    {orgs.join(", ")}
-                  </div>
+                  <div className="intel-detail-kv-val">{orgs.join(", ")}</div>
                 </div>
               )}
               {ops.length > 0 && (
                 <div className="intel-detail-kv-row">
                   <div className="intel-detail-kv-key">Operations</div>
-                  <div className="intel-detail-kv-val">
-                    {ops.join(", ")}
-                  </div>
+                  <div className="intel-detail-kv-val">{ops.join(", ")}</div>
                 </div>
               )}
 
@@ -428,7 +441,9 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
                   flags.map((f) => (
                     <span
                       key={f}
-                      className={`chip ${isHP(f) ? "chip-danger" : "chip-neutral"}`}
+                      className={`chip ${
+                        isHP(f) ? "chip-danger" : "chip-neutral"
+                      }`}
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
@@ -463,10 +478,7 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
               </div>
 
               {/* Add flag */}
-              <AddFlagRow
-                disabled={flagBusy}
-                onAdd={(f) => void addFlag(f)}
-              />
+              <AddFlagRow disabled={flagBusy} onAdd={(f) => void addFlag(f)} />
 
               {/* Quick HP toggle */}
               <div style={{ marginTop: "0.5rem" }}>
@@ -474,7 +486,11 @@ const IntelDetailsModal = memo(function IntelDetailsModal({
                   type="button"
                   onClick={() => void toggleHighPriority()}
                   disabled={hpBusy}
-                  title={isHighPriority ? "Unmark High Priority" : "Mark High Priority"}
+                  title={
+                    isHighPriority
+                      ? "Unmark High Priority"
+                      : "Mark High Priority"
+                  }
                   style={{
                     borderRadius: 6,
                     padding: "0.35rem 0.7rem",
@@ -550,7 +566,11 @@ function AddFlagRow({
           onAdd(f);
         }}
         disabled={disabled || !text.trim()}
-        style={{ borderRadius: 6, padding: "0.35rem 0.7rem", border: "1px solid #ccc" }}
+        style={{
+          borderRadius: 6,
+          padding: "0.35rem 0.7rem",
+          border: "1px solid #ccc",
+        }}
         title="Add flag"
       >
         {disabled ? "Saving…" : "Add"}
