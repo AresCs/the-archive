@@ -15,6 +15,7 @@ import IntelDetailsModal from "./IntelDetailsModal";
 import NewReportModal from "./NewReportModal";
 import EditReportModal from "./EditReportModal";
 import type { IntelDoc } from "./IntelFiles.types";
+import type { Agent } from "../../types";
 
 /* ---------- helpers ---------- */
 const fmtDate = (s?: string): string | undefined => {
@@ -39,8 +40,17 @@ const EditReportModalShim = EditReportModal as unknown as ComponentType<
   Record<string, unknown>
 >;
 
+// Always provide a function for callbacks that might be disabled
+const noop: () => void = () => {
+  return;
+};
+
+function isOperationalOrHigher(clearance: Agent["clearance"]): boolean {
+  return clearance === "Operational" || clearance === "TopSecret" || clearance === "Redline";
+}
+
 /* ---------- component ---------- */
-export default function IntelFilesPage() {
+export default function IntelFilesPage(): React.ReactElement {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -55,10 +65,21 @@ export default function IntelFilesPage() {
   const [editingIntel, setEditingIntel] = useState<IntelDoc | null>(null);
   const [editSaving, setEditSaving] = useState(false);
 
+  // Read current user to gate actions (server enforces too)
+  const sessionUser: Agent | null = useMemo((): Agent | null => {
+    try {
+      const raw = localStorage.getItem("user");
+      return raw ? (JSON.parse(raw) as Agent) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+  const canEditIntel = sessionUser ? isOperationalOrHigher(sessionUser.clearance) : false;
+
   /* ====== search state sync ====== */
   const searchQuery = searchParams.get("query") ?? "";
   const setSearchQuery = useCallback(
-    (q: string) => {
+    (q: string): void => {
       const next = new URLSearchParams(searchParams);
       if (q.trim().length > 0) next.set("query", q);
       else next.delete("query");
@@ -68,21 +89,17 @@ export default function IntelFilesPage() {
   );
 
   /* ====== load ====== */
-  const loadIntel = useCallback(async () => {
+  const loadIntel = useCallback(async (): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<IntelDoc[] | { results?: IntelDoc[] }>(
-        "/api/intel"
-      );
+      const data = await api.get<IntelDoc[] | { results?: IntelDoc[] }>("/api/intel");
       const list = Array.isArray(data) ? data : data?.results ?? [];
-      const normalized: IntelDoc[] = (Array.isArray(list) ? list : []).map(
-        (d) => ({
-          ...d,
-          title: d.title ?? "",
-          summary: d.summary ?? "",
-        })
-      );
+      const normalized: IntelDoc[] = (Array.isArray(list) ? list : []).map((d) => ({
+        ...d,
+        title: d.title ?? "",
+        summary: d.summary ?? "",
+      }));
       setIntelData(normalized);
     } catch {
       setError("Failed to load intel.");
@@ -132,13 +149,17 @@ export default function IntelFilesPage() {
   const [blackmailMaterial, setBlackmailMaterial] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const handleNewIntelSave = useCallback(async () => {
+  const handleNewIntelSave = useCallback(async (): Promise<void> => {
+    if (!canEditIntel) {
+      alert("Operational clearance required to create intel.");
+      return;
+    }
     if (!title.trim()) {
-      window.alert("Title is required.");
+      alert("Title is required.");
       return;
     }
     if (!summary.trim()) {
-      window.alert("Summary is required.");
+      alert("Summary is required.");
       return;
     }
 
@@ -161,12 +182,8 @@ export default function IntelFilesPage() {
 
     try {
       setSubmitting(true);
-      const saved = await api.post<IntelDoc | { entry: IntelDoc }>(
-        "/api/intel",
-        newIntel
-      );
-      const raw: IntelDoc =
-        "id" in saved ? saved : (saved as { entry: IntelDoc }).entry;
+      const saved = await api.post<IntelDoc | { entry: IntelDoc }>("/api/intel", newIntel);
+      const raw: IntelDoc = "id" in saved ? saved : (saved as { entry: IntelDoc }).entry;
       const doc: IntelDoc = {
         ...raw,
         title: raw.title ?? "",
@@ -189,11 +206,12 @@ export default function IntelFilesPage() {
       setCreatedBy("");
       setBlackmailMaterial("");
     } catch {
-      window.alert("Error saving intel.");
+      alert("Error saving intel.");
     } finally {
       setSubmitting(false);
     }
   }, [
+    canEditIntel,
     title,
     summary,
     linkedPersons,
@@ -210,19 +228,23 @@ export default function IntelFilesPage() {
   ]);
 
   /* ====== Delete ====== */
-  const handleDeleteIntel = useCallback(async (id: number) => {
+  const handleDeleteIntel = useCallback(async (id: number): Promise<void> => {
+    if (!canEditIntel) {
+      alert("Operational clearance required to delete intel.");
+      return;
+    }
     try {
       await api.delete<unknown>(`/api/intel/${id}`);
       setIntelData((prev) => prev.filter((entry) => entry.id !== id));
       setSelectedIntel(null);
       setConfirmDeleteId(null);
     } catch {
-      window.alert(`Error deleting intel.`);
+      alert(`Error deleting intel.`);
     }
-  }, []);
+  }, [canEditIntel]);
 
   /* ====== Edit flow ====== */
-  const openEditFromDetails = useCallback(() => {
+  const openEditFromDetails = useCallback((): void => {
     if (!selectedIntel) return;
     setETitle(selectedIntel.title ?? "");
     setESummary(selectedIntel.summary ?? "");
@@ -255,8 +277,12 @@ export default function IntelFilesPage() {
   const [eCreatedBy, setECreatedBy] = useState("");
   const [eBlackmailMaterial, setEBlackmailMaterial] = useState("");
 
-  const saveEdit = useCallback(async () => {
+  const saveEdit = useCallback(async (): Promise<void> => {
     if (!editingIntel) return;
+    if (!canEditIntel) {
+      alert("Operational clearance required to edit intel.");
+      return;
+    }
     const updated: Partial<IntelDoc> = {
       ...editingIntel,
       title: eTitle.trim(),
@@ -281,8 +307,7 @@ export default function IntelFilesPage() {
         `/api/intel/${editingIntel.id}`,
         updated
       );
-      const raw: IntelDoc =
-        "id" in saved ? saved : (saved as { entry: IntelDoc }).entry;
+      const raw: IntelDoc = "id" in saved ? saved : (saved as { entry: IntelDoc }).entry;
       const doc: IntelDoc = {
         ...raw,
         title: raw.title ?? "",
@@ -291,11 +316,12 @@ export default function IntelFilesPage() {
       setIntelData((prev) => prev.map((d) => (d.id === doc.id ? doc : d)));
       setEditingIntel(null);
     } catch {
-      window.alert(`Error saving intel.`);
+      alert(`Error saving intel.`);
     } finally {
       setEditSaving(false);
     }
   }, [
+    canEditIntel,
     editingIntel,
     eTitle,
     eSummary,
@@ -333,9 +359,7 @@ export default function IntelFilesPage() {
       {/* Background */}
       <div className="intel-background">
         <MatrixCanvas
-          paused={
-            creatingIntel || selectedIntel !== null || editingIntel !== null
-          }
+          paused={creatingIntel || selectedIntel !== null || editingIntel !== null}
         />
       </div>
 
@@ -355,8 +379,10 @@ export default function IntelFilesPage() {
 
             <button
               className="intel-btn intel-btn--new"
-              onClick={() => setCreatingIntel(true)}
+              onClick={() => (canEditIntel ? setCreatingIntel(true) : undefined)}
               type="button"
+              disabled={!canEditIntel}
+              title={canEditIntel ? "Create new report" : "Operational clearance required"}
             >
               + New Report
             </button>
@@ -386,16 +412,14 @@ export default function IntelFilesPage() {
 
                 {/* Meta row: just pills + date */}
                 <div className="intel-card-meta">
-                  <span className="intel-pill">
-                    {doc.operation_code || "—"}
-                  </span>
+                  <span className="intel-pill">{doc.operation_code || "—"}</span>
                   <span className="intel-pill">{doc.status || "—"}</span>
                   <span className="intel-card-date">
                     {fmtDate(doc.last_updated) || "—"}
                   </span>
                 </div>
 
-                {/* Linked entities (outside the pill row) */}
+                {/* Linked entities */}
                 {doc.linked_persons?.length || doc.linked_reports?.length ? (
                   <div className="intel-card-actions">
                     {doc.linked_persons?.length ? (
@@ -408,9 +432,7 @@ export default function IntelFilesPage() {
                             type="button"
                             onClick={() => {
                               setSelectedIntel(null);
-                              navigate(
-                                `/search?query=${encodeURIComponent(p)}`
-                              );
+                              navigate(`/search?query=${encodeURIComponent(p)}`);
                             }}
                           >
                             {p}
@@ -453,32 +475,28 @@ export default function IntelFilesPage() {
         )}
 
         {/* No results */}
-        {!loading &&
-          !error &&
-          searchQuery.trim() &&
-          filteredIntel.length === 0 && (
-            <div className="intel-no-results">
-              No results for <strong>{searchQuery.trim()}</strong>.
-            </div>
-          )}
+        {!loading && !error && searchQuery.trim() && filteredIntel.length === 0 && (
+          <div className="intel-no-results">
+            No results for <strong>{searchQuery.trim()}</strong>.
+          </div>
+        )}
 
-        {!loading &&
-          !error &&
-          !searchQuery.trim() &&
-          intelData.length === 0 && (
-            <div className="intel-no-results">
-              No intel reports yet.
-              <div style={{ marginTop: "1rem" }}>
-                <button
-                  className="intel-btn intel-btn--new"
-                  type="button"
-                  onClick={() => setCreatingIntel(true)}
-                >
-                  + Create the first report
-                </button>
-              </div>
+        {!loading && !error && !searchQuery.trim() && intelData.length === 0 && (
+          <div className="intel-no-results">
+            No intel reports yet.
+            <div style={{ marginTop: "1rem" }}>
+              <button
+                className="intel-btn intel-btn--new"
+                type="button"
+                onClick={() => (canEditIntel ? setCreatingIntel(true) : undefined)}
+                disabled={!canEditIntel}
+                title={canEditIntel ? "Create new report" : "Operational clearance required"}
+              >
+                + Create the first report
+              </button>
             </div>
-          )}
+          </div>
+        )}
       </div>
 
       {/* Modals */}
@@ -511,7 +529,7 @@ export default function IntelFilesPage() {
           onCreatedByChange={setCreatedBy}
           onBlackmailMaterialChange={setBlackmailMaterial}
           onCancel={() => setCreatingIntel(false)}
-          onSave={handleNewIntelSave}
+          onSave={() => void handleNewIntelSave()}
           submitting={submitting}
         />
       )}
@@ -521,7 +539,7 @@ export default function IntelFilesPage() {
           intel={selectedIntel}
           onClose={() => setSelectedIntel(null)}
           onDelete={() => setConfirmDeleteId(selectedIntel.id)}
-          onEdit={openEditFromDetails}
+          onEdit={canEditIntel ? openEditFromDetails : noop}  // <- always a function
           onNavigateReport={(code) => {
             setSelectedIntel(null);
             setSearchQuery(code);
@@ -563,8 +581,8 @@ export default function IntelFilesPage() {
           onCreatedByChange={setECreatedBy}
           onBlackmailMaterialChange={setEBlackmailMaterial}
           onCancel={() => setEditingIntel(null)}
-          onSave={saveEdit}
-          saving={editSaving} // <-- bugfix (was "submitting")
+          onSave={() => void saveEdit()}
+          saving={editSaving}
         />
       )}
 
@@ -575,9 +593,15 @@ export default function IntelFilesPage() {
             <p>Are you sure you want to delete this intel report?</p>
             <div className="intel-confirm-actions">
               <button
-                onClick={() => handleDeleteIntel(confirmDeleteId)}
+                onClick={() => {
+                  if (confirmDeleteId !== null) {
+                    void handleDeleteIntel(confirmDeleteId);
+                  }
+                }}
                 type="button"
                 className="intel-btn intel-btn--danger"
+                disabled={!canEditIntel}
+                title={canEditIntel ? "Delete report" : "Operational clearance required"}
               >
                 Yes, Delete
               </button>

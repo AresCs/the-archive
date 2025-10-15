@@ -1,3 +1,6 @@
+export type Clearance = "Minimal" | "Restricted" | "Operational" | "TopSecret" | "Redline";
+
+/** Person record */
 export type Person = {
   updated_by: string;
   image_url?: string;
@@ -13,7 +16,7 @@ export type Person = {
   known_associates?: string[];
   organization_ties?: string[];
   recent_contacts?: string[];
-  suspected_informant?: 'yes' | 'no' | 'unknown';
+  suspected_informant?: "yes" | "no" | "unknown";
 
   last_known_location?: string;
   known_vehicles?: { make: string; model: string; color: string; plate: string }[];
@@ -31,17 +34,30 @@ export type Person = {
   created_by?: string;
   last_updated?: string;
   internal_flags?: string[];
-  access_level?: 'minimal' | 'confidential' | 'restricted' | 'classified' | 'operational' | 'topsecret' | 'redline';
+  access_level?:
+    | "minimal"
+    | "confidential"
+    | "restricted"
+    | "classified"
+    | "operational"
+    | "topsecret"
+    | "redline";
   high_priority_at?: string; // ISO timestamp when flagged
+
+  /** allow backend extras without using `any` */
+  [key: string]: unknown;
 };
 
-/** Authenticated agent/operator shape used across the UI */
+/** Authenticated agent/operator shape used across the UI (public; no password) */
 export type Agent = {
   id: string;
   name: string;
   rank: string;
-  clearance: string;
+  clearance: Clearance; // <-- typed to union
   high_priority_at?: string; // ISO timestamp when flagged
+
+  /** allow backend extras without using `any` */
+  [key: string]: unknown;
 };
 
 /** Intel document as returned by the backend API */
@@ -57,4 +73,8 @@ export type Intel = {
   created_by?: string;
   last_updated?: string;
   high_priority_at?: string; // ISO timestamp when flagged
+  classification?: string;   // aligns with backend for access control
+
+  /** allow backend extras without using `any` */
+  [key: string]: unknown;
 };

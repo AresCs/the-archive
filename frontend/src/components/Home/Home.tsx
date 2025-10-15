@@ -2,18 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import MatrixCanvas from "../MatrixCanvas/MatrixCanvas";
 import "./Home.css";
-
-type Agent = {
-  id: string;
-  name: string;
-  rank: string;
-  clearance: string;
-};
+import type { Agent } from "../../types";
+import { hasClearance } from "../../lib/auth";
 
 type Props = {
   user: Agent | null;
   loading: boolean;
-  setUser: (user: Agent | null) => void;
+  setUser: React.Dispatch<React.SetStateAction<Agent | null>>;
 };
 
 type HighPriorityItem = {
@@ -23,6 +18,10 @@ type HighPriorityItem = {
   flaggedAt: string; // ISO string
 };
 
+// Build API base using the same host the app is served from (avoids localhost/127 mismatch)
+const HOST = window.location.hostname;
+const API = `http://${HOST}:8000`;
+
 export default function HomePage({ user, loading, setUser }: Props) {
   const navigate = useNavigate();
   const [highPriority, setHighPriority] = useState<HighPriorityItem[]>([]);
@@ -30,10 +29,17 @@ export default function HomePage({ user, loading, setUser }: Props) {
   const [hpError, setHpError] = useState<string | null>(null);
   const [systemStatus] = useState("Online");
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API}/api/logout`, { method: "POST", credentials: "include" });
+    } catch {
+      // ignore
+    } finally {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      setUser(null);
+      navigate("/");
+    }
   };
 
   useEffect(() => {
@@ -44,33 +50,29 @@ export default function HomePage({ user, loading, setUser }: Props) {
       setHpLoading(true);
       setHpError(null);
       try {
-        const res = await fetch("http://localhost:8000/api/high-priority", {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/api/high-priority`, {
+          method: "GET",
           signal: ctrl.signal,
+          credentials: "include",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        if (!res.ok) {
-          throw new Error(`Request failed: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         const data: HighPriorityItem[] = await res.json();
-
         const sorted = [...data].sort(
-          (a, b) =>
-            new Date(b.flaggedAt).getTime() - new Date(a.flaggedAt).getTime()
+          (a, b) => new Date(b.flaggedAt).getTime() - new Date(a.flaggedAt).getTime()
         );
         setHighPriority(sorted.slice(0, 5));
       } catch (err: unknown) {
         if (err instanceof DOMException && err.name === "AbortError") return;
-        if (err instanceof Error) {
-          setHpError(err.message);
-        } else {
-          setHpError("Failed to load high priority list.");
-        }
+        setHpError(err instanceof Error ? err.message : "Failed to load high priority list.");
         setHighPriority([]);
       } finally {
         setHpLoading(false);
       }
     };
 
-    fetchHP();
+    void fetchHP();
     return () => ctrl.abort();
   }, [user, loading]);
 
@@ -121,13 +123,30 @@ export default function HomePage({ user, loading, setUser }: Props) {
         <p className="clearance">Clearance Level: {user.clearance}</p>
 
         <div className="home-buttons">
-          <button onClick={() => navigate("/search")}>🔍 Search Records</button>
-          <button onClick={() => navigate("/persons-of-interest")}>
-            🧍 Persons of Interest
-          </button>
-          <button onClick={() => navigate("/intel")}>🧾 Intel Files</button>
-          <button onClick={() => navigate("/profile")}>🕵️ Agent Profile</button>
-          <button onClick={() => navigate("/agents")}>💻 Agents</button>
+          {/* Minimal and up */}
+          {hasClearance(user, "Minimal") && (
+            <>
+              <button onClick={() => navigate("/search")}>🔍 Search Records</button>
+              <button onClick={() => navigate("/profile")}>🕵️ Agent Profile</button>
+            </>
+          )}
+
+          {/* Restricted and up */}
+          {hasClearance(user, "Restricted") && (
+            <button onClick={() => navigate("/poi")}>🧍 Persons of Interest</button>
+          )}
+
+          {/* Operational and up */}
+          {hasClearance(user, "Operational") && (
+            <button onClick={() => navigate("/intel")}>🧾 Intel Files</button>
+          )}
+
+          {/* TopSecret and Redline */}
+          {hasClearance(user, "TopSecret") && (
+            <button onClick={() => navigate("/agents")}>💻 Agents</button>
+          )}
+
+          {/* Always show logout for authenticated users */}
           <button onClick={handleLogout}>🚪 Logout</button>
         </div>
 

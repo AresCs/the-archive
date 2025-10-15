@@ -8,7 +8,7 @@
     "clearance": "Redline",
     "createdBy": "The Archive",
     "createdAt": "2025-08-21",
-    "lastActive": "2025-08-28T03:30:34Z",
+    "lastActive": "2025-10-15T13:20:42Z",
     "badgeNumber": "A-0001",
     "callSign": "ARCH-1",
     "unit": "Internal Affairs",
@@ -121,7 +121,7 @@
     "username": "nightjar",
     "password": "4321",
     "rank": "Handler",
-    "clearance": "Top Secret",
+    "clearance": "TopSecret",
     "createdBy": "Agent Blackwire",
     "createdAt": "2025-08-10",
     "lastActive": "2025-08-22T08:12:05Z",
@@ -211,7 +211,7 @@
     "username": "vox",
     "password": "9876",
     "rank": "Analyst",
-    "clearance": "Classified",
+    "clearance": "Operational",
     "createdBy": "Agent Nightjar",
     "createdAt": "2025-08-05",
     "lastActive": "2025-08-22T07:55:12Z",
@@ -296,5 +296,49 @@
     "twoFactorEnabled": true,
     "failedLoginCount": 0,
     "lastPasswordChange": "2025-08-10T11:30:00Z"
+  },
+  {
+    "id": "4",
+    "name": "testMinimal",
+    "username": "minimal",
+    "password": "1234",
+    "rank": "Observer",
+    "clearance": "Minimal",
+    "createdBy": "You",
+    "createdAt": "2025-08-28",
+    "lastActive": "2025-08-28T04:07:57Z"
+  },
+  {
+    "id": "5",
+    "name": "testRestricted",
+    "username": "Restricted",
+    "password": "1234",
+    "rank": "Observer",
+    "clearance": "Restricted",
+    "createdBy": "You",
+    "createdAt": "2025-08-28",
+    "lastActive": "2025-09-06T15:29:30Z"
+  },
+  {
+    "id": "6",
+    "name": "testOperational",
+    "username": "Operational",
+    "password": "1234",
+    "rank": "Observer",
+    "clearance": "Operational",
+    "createdBy": "You",
+    "createdAt": "2025-08-28",
+    "lastActive": "2025-08-28T04:08:36Z"
+  },
+  {
+    "id": "7",
+    "name": "testOperational",
+    "username": "TopSecret",
+    "password": "1234",
+    "rank": "Observer",
+    "clearance": "TopSecret",
+    "createdBy": "You",
+    "createdAt": "2025-08-28",
+    "lastActive": "2025-09-06T15:44:56Z"
   }
 ]

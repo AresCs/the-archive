@@ -4,20 +4,33 @@ import MatrixCanvas from "../MatrixCanvas/MatrixCanvas";
 import PersonDetails from "../PersonDetails/PersonDetails";
 import { usePeople } from "../../hooks/usePeople";
 import { api } from "../../lib/api";
-import type { Person } from "../../types";
+import type { Agent, Person } from "../../types";
 import "./PersonsOfInterestPage.css";
 
-export default function PersonsOfInterestPage() {
+export default function PersonsOfInterestPage(): React.ReactElement {
   const navigate = useNavigate();
   const { data: allPeople, loading } = usePeople();
 
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
+  // Read current user from localStorage to gate destructive actions
+  const sessionUser: Agent | null = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      return raw ? (JSON.parse(raw) as Agent) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+  const canAdminPeople = sessionUser?.clearance === "Redline";
+
   // Filter only people with the "Person of Interest" internal flag
   const poiPeople = useMemo<Person[]>(() => {
     if (!Array.isArray(allPeople)) return [];
-    return allPeople.filter((p) => (p.internal_flags ?? []).includes("Person of Interest"));
+    return allPeople.filter((p) =>
+      (p.internal_flags ?? []).includes("Person of Interest")
+    );
   }, [allPeople]);
 
   // Esc to close confirm
@@ -30,19 +43,22 @@ export default function PersonsOfInterestPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [confirmDeleteId]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number): Promise<void> => {
+    if (!canAdminPeople) {
+      alert("Redline clearance required to delete subjects.");
+      return;
+    }
     try {
       await api.delete(`/api/delete/${id}`);
       setSelectedPerson(null);
-      // remove from local view immediately
-      // (since we derive from allPeople via hook, this is optimistic UI;
-      // if your hook revalidates, it will reflect server state)
+      // Optimistic: usePeople hook should revalidate; this clears local selection.
     } catch {
       alert("Failed to delete entry.");
     }
   };
 
-  const getPrimaryAlias = (aliases?: string[]) => (aliases && aliases.length ? aliases[0] : "—");
+  const getPrimaryAlias = (aliases?: string[]): string =>
+    aliases && aliases.length ? aliases[0] : "—";
 
   return (
     <div className="poi-container">
@@ -65,7 +81,7 @@ export default function PersonsOfInterestPage() {
       ) : (
         <div className="poi-grid">
           {poiPeople.map((person) => (
-            <div key={person.id} className="poi-card">
+            <div key={String(person.id ?? person.full_name)} className="poi-card">
               <img
                 src={person.image_url?.trim() || "/images/default-profile.jpg"}
                 alt={person.full_name}
@@ -99,7 +115,7 @@ export default function PersonsOfInterestPage() {
         <PersonDetails
           person={selectedPerson}
           onClose={() => setSelectedPerson(null)}
-          onDelete={(id: number) => setConfirmDeleteId(id)}
+          onDelete={(id: number) => setConfirmDeleteId(id)} // UI allows request; server + canAdminPeople guard actual delete
           onEdit={() => {
             // This page is read-focused; if you want edit/create here,
             // you can open your NewEntryForm like on SearchPage.
@@ -107,7 +123,7 @@ export default function PersonsOfInterestPage() {
         />
       )}
 
-      {/* Confirm Delete (on top, unified button look, no animations) */}
+      {/* Confirm Delete */}
       {confirmDeleteId !== null && (
         <div className="intel-delete-confirm-overlay">
           <div
@@ -126,6 +142,8 @@ export default function PersonsOfInterestPage() {
                   void handleDelete(confirmDeleteId);
                   setConfirmDeleteId(null);
                 }}
+                disabled={!canAdminPeople}
+                title={canAdminPeople ? "Delete record" : "Redline required"}
               >
                 Yes, Delete
               </button>

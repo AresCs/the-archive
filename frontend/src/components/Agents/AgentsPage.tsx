@@ -6,8 +6,13 @@ import AddAgentModal from "./modals/AddAgentModal";
 import EditAgentModal from "./modals/EditAgentModal";
 import ConfirmDeleteModal from "./modals/ConfirmDeleteModal";
 import { useNavigate } from "react-router-dom";
+import type { Agent as SessionAgent } from "../../types"; // logged-in user type
 
-type AgentRecord = {
+type Props = {
+  user: SessionAgent | null;
+};
+
+type AgentApiRecord = {
   id: string | number;
   name: string;
   username?: string;
@@ -18,7 +23,7 @@ type AgentRecord = {
   createdAt?: string; // YYYY-MM-DD
 };
 
-type Agent = {
+type AgentRow = {
   id: string | number;
   name: string;
   username?: string;
@@ -52,16 +57,16 @@ const CLEARANCES = [
   "Redline",
 ] as const;
 
-export default function AgentsPage() {
+export default function AgentsPage({ user }: Props) {
   const navigate = useNavigate();
 
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agents, setAgents] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // modals
   const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState<Agent | null>(null);
+  const [editing, setEditing] = useState<AgentRow | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | number | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -70,15 +75,18 @@ export default function AgentsPage() {
   const [rankFilter, setRankFilter] = useState<string>("");
   const [clearanceFilter, setClearanceFilter] = useState<string>("");
 
+  // Only Redline can create/edit/delete agents (TopSecret is view-only)
+  const canAdminAgents = user?.clearance === "Redline";
+
   useEffect(() => {
     let mounted = true;
-    const load = async () => {
+    const load = async (): Promise<void> => {
       try {
         setError(null);
         setLoading(true);
-        const data = await api.get<AgentRecord[] | { results?: AgentRecord[] }>("/api/agents");
+        const data = await api.get<AgentApiRecord[] | { results?: AgentApiRecord[] }>("/api/agents");
         const raw = Array.isArray(data) ? data : data?.results ?? [];
-        const mapped: Agent[] = raw.map((a) => ({
+        const mapped: AgentRow[] = raw.map((a) => ({
           id: a.id,
           name: a.name,
           username: a.username,
@@ -102,18 +110,21 @@ export default function AgentsPage() {
     };
   }, []);
 
-  const doDelete = useCallback(async (id: string | number) => {
-    try {
-      setDeleting(true);
-      await api.delete(`/api/agents/${encodeURIComponent(String(id))}`);
-      setAgents((prev) => prev.filter((a) => a.id !== id));
-    } catch {
-      alert("Failed to delete agent.");
-    } finally {
-      setDeleting(false);
-      setPendingDeleteId(null);
-    }
-  }, []);
+  const doDelete = useCallback(
+    async (id: string | number): Promise<void> => {
+      try {
+        setDeleting(true);
+        await api.delete(`/api/agents/${encodeURIComponent(String(id))}`);
+        setAgents((prev) => prev.filter((a) => a.id !== id));
+      } catch {
+        alert("Failed to delete agent.");
+      } finally {
+        setDeleting(false);
+        setPendingDeleteId(null);
+      }
+    },
+    []
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -156,28 +167,41 @@ export default function AgentsPage() {
             </div>
 
             <div className="agent-actions">
-              <button
-                className="edit-button"
-                type="button"
-                onClick={() => setEditing(agent)}
-                title={`Edit ${agent.name}`}
-              >
-                ✏️ Edit
-              </button>
-              <button
-                className="delete-button"
-                type="button"
-                onClick={() => setPendingDeleteId(agent.id)}
-                title={`Delete ${agent.name}`}
-              >
-                🗑 Delete
-              </button>
+              {canAdminAgents ? (
+                <>
+                  <button
+                    className="edit-button"
+                    type="button"
+                    onClick={() => setEditing(agent)}
+                    title={`Edit ${agent.name}`}
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    className="delete-button"
+                    type="button"
+                    onClick={() => setPendingDeleteId(agent.id)}
+                    title={`Delete ${agent.name}`}
+                  >
+                    🗑 Delete
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="edit-button" type="button" disabled title="Redline required">
+                    ✏️ Edit
+                  </button>
+                  <button className="delete-button" type="button" disabled title="Redline required">
+                    🗑 Delete
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ))}
       </div>
     );
-  }, [filtered, error, loading]);
+  }, [filtered, error, loading, canAdminAgents]);
 
   return (
     <div className="agents-outer">
@@ -187,13 +211,20 @@ export default function AgentsPage() {
         <div className="agents-header">
           <h1 className="agents-title">Agents Directory</h1>
           <div className="agents-header-actions">
-            <button
-              className="add-button"
-              type="button"
-              onClick={() => setAdding(true)}
-            >
-              ➕ Add Agent
-            </button>
+            {canAdminAgents ? (
+              <button
+                className="add-button"
+                type="button"
+                onClick={() => setAdding(true)}
+                title="Add Agent (Redline only)"
+              >
+                ➕ Add Agent
+              </button>
+            ) : (
+              <button className="add-button" type="button" disabled title="Redline required">
+                ➕ Add Agent
+              </button>
+            )}
             <button
               className="back-button"
               type="button"
@@ -274,7 +305,7 @@ export default function AgentsPage() {
       <ConfirmDeleteModal
         open={pendingDeleteId !== null}
         onCancel={() => setPendingDeleteId(null)}
-        onConfirm={() => pendingDeleteId != null && doDelete(pendingDeleteId)}
+        onConfirm={() => pendingDeleteId != null && void doDelete(pendingDeleteId)}
         name={pendingName}
         busy={deleting}
       />

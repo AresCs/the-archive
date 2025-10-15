@@ -1,35 +1,38 @@
 // frontend/src/App.tsx
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Login from "./components/Login/Login";
-import { useEffect, useState } from "react";
 import type { Agent } from "./types";
+import { ProtectedRoute } from "./lib/auth";
+import AgentsPage from "./components/Agents/AgentsPage"; // this one accepts user
 
-// Lazy-load heavy pages at module scope
-const Home = React.lazy(() => import("./components/Home/Home"));
-const SearchPage = React.lazy(() => import("./components/Search/SearchPage"));
+// Lazy pages
+const Home = React.lazy(() => import("./components/Home/Home")); // accepts user, loading, setUser
+const SearchPage = React.lazy(() => import("./components/Search/SearchPage")); // no user prop
 const PersonsOfInterest = React.lazy(
   () => import("./components/PersonsOfInterest/PersonsOfInterestPage")
-);
+); // no user prop
 const IntelFilesPage = React.lazy(
   () => import("./components/Intel/IntelFilesPage")
-);
+); // no user prop
 const AgentProfile = React.lazy(
   () => import("./components/Profile/AgentProfile")
-);
-const Agents = React.lazy(() => import("./components/Agents/AgentsPage"));
+); // no user prop
 
-function App() {
+function App(): React.ReactElement {
   const [user, setUser] = useState<Agent | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // ✅ On app load, restore user from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) {
       try {
         const parsed: Agent = JSON.parse(stored);
-        
         setUser(parsed);
       } catch {
         localStorage.removeItem("user");
@@ -40,38 +43,82 @@ function App() {
 
   return (
     <Router>
-      <React.Suspense
-        fallback={
-          <div
-            style={{ display: "grid", placeItems: "center", minHeight: "40vh" }}
-          >
-            Loading…
-          </div>
-        }
-      >
+      <React.Suspense fallback={<div>Loading…</div>}>
         <Routes>
           <Route
-            path="/"
+            path="/login"
             element={
               <Login
-                onLogin={(user: Agent) => {
-                  setUser(user);
-                  localStorage.setItem("user", JSON.stringify(user));
+                onLogin={(u: Agent) => {
+                  setUser(u);
+                  localStorage.setItem("user", JSON.stringify(u));
                 }}
               />
             }
           />
+
           <Route
             path="/home"
             element={
               <Home user={user} loading={loadingUser} setUser={setUser} />
             }
           />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/persons-of-interest" element={<PersonsOfInterest />} />
-          <Route path="/intel" element={<IntelFilesPage />} />
-          <Route path="/profile" element={<AgentProfile />} />
-          <Route path="/agents" element={<Agents />} />
+
+          {/* Minimal and up: Search */}
+          <Route
+            path="/search"
+            element={
+              <ProtectedRoute user={user} need="Minimal">
+                <SearchPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Restricted and up: Persons of Interest */}
+          <Route
+            path="/poi"
+            element={
+              <ProtectedRoute user={user} need="Restricted">
+                <PersonsOfInterest />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Operational and up: Intel Files */}
+          <Route
+            path="/intel"
+            element={
+              <ProtectedRoute user={user} need="Operational">
+                <IntelFilesPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* TopSecret (view-only) and Redline (full): Agents */}
+          <Route
+            path="/agents"
+            element={
+              <ProtectedRoute user={user} need="TopSecret">
+                <AgentsPage user={user} />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Profile (logged-in) */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute user={user} need="Minimal">
+                <AgentProfile user={user} /> {/* OK even if user is null */}
+              </ProtectedRoute>
+            }
+          />
+
+          {/* default */}
+          <Route
+            path="*"
+            element={<Navigate to={user ? "/home" : "/login"} replace />}
+          />
         </Routes>
       </React.Suspense>
     </Router>

@@ -120,7 +120,7 @@ export default function Login({ onLogin }: Props) {
     };
   }, [showLogin]);
 
-  const handleLogin = async () => {
+  const handleLogin = async (): Promise<void> => {
     setError("");
     if (!username.trim() || !password.trim()) {
       setError("Please enter username and password.");
@@ -128,21 +128,43 @@ export default function Login({ onLogin }: Props) {
     }
 
     try {
-      const data = await api.post<{ user: Agent }>("/api/login", {
-        username,
-        password,
-      });
+      // ⬇️ expect { user, token } from backend
+      const data = await api.post<{ user: Agent; token: string }>(
+        "/api/login",
+        {
+          username,
+          password,
+        },
+        { credentials: "include" } // ensure cookie set
+      );
+
       const user = data.user;
-      if (!user?.id) {
+      const token = data.token;
+
+      if (!user?.id || !token) {
         setError("Invalid login response.");
         return;
       }
+
+      // persist both
       onLogin(user);
-      localStorage.setItem("agent", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+
+      // Optional: call api.setToken if your api client supports it (no `any`)
+      type ApiWithSetToken = typeof api & { setToken?: (t: string) => void };
+      const maybeApi: ApiWithSetToken = api as ApiWithSetToken;
+      if (typeof maybeApi.setToken === "function") {
+        maybeApi.setToken(token);
+      }
+
       navigate("/home");
-    } catch (err) {
+    } catch (err: unknown) {
+      // keep ESLint happy with explicit typing
+      const msg =
+        err instanceof Error ? err.message : "Could not connect or invalid credentials.";
       console.error("Login error:", err);
-      setError("Could not connect or invalid credentials.");
+      setError(msg);
     }
   };
 
@@ -176,11 +198,11 @@ export default function Login({ onLogin }: Props) {
             onChange={(e) => setPassword(e.target.value)}
             aria-label="Password"
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleLogin();
+              if (e.key === "Enter") void handleLogin();
             }}
           />
 
-          <button onClick={handleLogin}>Proceed</button>
+          <button onClick={() => void handleLogin()}>Proceed</button>
           {error && <p className="login-error">{error}</p>}
         </div>
       </div>

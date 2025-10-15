@@ -5,8 +5,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TypedDict
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+
+# ACL / Session helpers (make sure backend/auth.py exists with these)
+from auth import (
+    make_session,
+    read_user_from_request,
+    require_clearance,
+    can_view_record,
+    SESSION_COOKIE,
+)
 
 # ========= Paths / storage =========
 ROOT = Path(__file__).parent
@@ -198,22 +207,70 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # ---- Health ----
 @app.get("/healthz")
 def health() -> Dict[str, str]:
     return {"status": "ok", "time": _now_iso()}
 
 # =======================
+#        AUTH
+# =======================
+@app.post("/api/login")
+def login(payload: Dict[str, Any], response: Response) -> Dict[str, Any]:
+    """
+    Sets an HttpOnly JWT cookie and returns the public user.
+    """
+    username = str(payload.get("username", "")).strip()
+    password = str(payload.get("password", ""))
+    if not username or not password:
+        raise HTTPException(400, detail="Username and password are required")
+
+    agents = load_agents()
+    for a in agents:
+        if (a.get("username") or "").strip().lower() == username.lower() and (a.get("password") or "") == password:
+            a["lastActive"] = _now_iso()
+            save_agents(agents)
+            user_pub = _public_agent(a)
+            token = make_session(user_pub)
+            response.set_cookie(
+                key=SESSION_COOKIE,
+                value=token,
+                httponly=True,
+                samesite="Lax",
+                secure=False,  # set True behind HTTPS
+                max_age=60 * 60 * 8,
+                path="/",
+            )
+            return {"user": user_pub, "token": token}
+
+    # No match after checking all agents
+    raise HTTPException(401, detail="Invalid credentials")
+
+
+@app.get("/api/me")
+def me(request: Request) -> Dict[str, Any]:
+    user = read_user_from_request(request)
+    if not user:
+        raise HTTPException(401, detail="Not authenticated")
+    return {"user": user}
+
+@app.post("/api/logout")
+def logout(response: Response) -> Dict[str, Any]:
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    return {"message": "ok"}
+
+# =======================
 #        AGENTS
 # =======================
 @app.get("/api/agents")
-def list_agents() -> List[AgentRecord]:
-    """Return the full agents list (PUBLIC view: no passwords)."""
+def list_agents(request: Request) -> List[AgentRecord]:
+    """TopSecret+ can view full roster (PUBLIC view: no passwords)."""
+    require_clearance(request, "TopSecret")
     return [_public_agent(a) for a in load_agents()]
 
 @app.get("/api/agents/{agent_id}")
-def get_agent(agent_id: str) -> AgentRecord:
+def get_agent(agent_id: str, request: Request) -> AgentRecord:
+    require_clearance(request, "TopSecret")
     agents = load_agents()
     target = _normalize_id_str(agent_id)
     for a in agents:
@@ -222,8 +279,9 @@ def get_agent(agent_id: str) -> AgentRecord:
     raise HTTPException(404, detail="Agent not found")
 
 @app.post("/api/agents")
-def create_agent(payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Create agent. Server trusts client-provided id format (string) if present; otherwise assigns numeric-like string."""
+def create_agent(payload: Dict[str, Any], request: Request) -> Dict[str, Any]:
+    """Create agent. Only Redline may create."""
+    require_clearance(request, "Redline")
     required = ["name", "password", "rank", "clearance"]
     missing = [k for k in required if not str(payload.get(k, "")).strip()]
     if missing:
@@ -270,7 +328,8 @@ def create_agent(payload: Dict[str, Any]) -> Dict[str, Any]:
     return {"message": "created", "agent": _public_agent(agent)}
 
 @app.put("/api/agents/{agent_id}")
-def update_agent(agent_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+def update_agent(agent_id: str, payload: Dict[str, Any], request: Request) -> Dict[str, Any]:
+    require_clearance(request, "Redline")
     agents = load_agents()
     target = _normalize_id_str(agent_id)
 
@@ -293,7 +352,8 @@ def update_agent(agent_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     raise HTTPException(404, detail="Agent not found")
 
 @app.delete("/api/agents/{agent_id}")
-def delete_agent(agent_id: str) -> Dict[str, Any]:
+def delete_agent(agent_id: str, request: Request) -> Dict[str, Any]:
+    require_clearance(request, "Redline")
     agents = load_agents()
     target = _normalize_id_str(agent_id)
     new_agents: List[AgentRecord] = []
@@ -308,52 +368,49 @@ def delete_agent(agent_id: str) -> Dict[str, Any]:
     save_agents(new_agents)
     return {"message": "deleted", "agent": _public_agent(deleted)}
 
-# ---- Auth (toy) ----
-@app.post("/api/login")
-def login(payload: Dict[str, Any]) -> Dict[str, Any]:
-    username = str(payload.get("username", "")).strip()
-    password = str(payload.get("password", ""))
-    if not username or not password:
-        raise HTTPException(400, detail="Username and password are required")
-    agents = load_agents()
-    for a in agents:
-        if (a.get("username") or "").strip().lower() == username.lower() and (a.get("password") or "") == password:
-            a["lastActive"] = _now_iso()
-            save_agents(agents)
-            return {"user": _public_agent(a)}
-    raise HTTPException(401, detail="Invalid credentials")
-
 # =======================
 #        PEOPLE
 # =======================
 @app.get("/api/all")
-def list_people() -> dict:
+def list_people(request: Request) -> dict:
+    """
+    Minimal+ can list people; results are filtered by per-record visibility.
+    - Default people are Minimal unless flagged "Person of Interest" (Restricted)
+      or given a 'classification' field (then mapping is handled in auth.can_view_record()).
+    """
+    require_clearance(request, "Minimal")
+    user = read_user_from_request(request)
     try:
         people = load_people()
         if not isinstance(people, list):
             people = []
-        return {"results": people}
+        # filter by can_view_record
+        visible = [p for p in people if can_view_record(user, p)] if user else []
+        return {"results": visible}
     except Exception:
-        # If something goes wrong, return an empty list with a 200 to avoid CORS confusion
         return {"results": []}
 
-
 @app.post("/api/search")
-def search_people(payload: Dict[str, Any]) -> Dict[str, Any]:
+def search_people(payload: Dict[str, Any], request: Request) -> Dict[str, Any]:
     """
-    Search people.json across several fields.
+    Minimal+ can search; results filtered to what the caller can see.
     Body: { "query": "string" }
     Returns: { "results": [...] }
     """
+    require_clearance(request, "Minimal")
+    user = read_user_from_request(request)
     query = str(payload.get("query", "")).strip()
     if not query:
         return {"results": []}
     people = load_people()
-    results = [p for p in people if _matches_query(p, query)]
-    return {"results": results}
+    matched = [p for p in people if _matches_query(p, query)]
+    visible = [p for p in matched if can_view_record(user, p)] if user else []
+    return {"results": visible}
 
 @app.post("/api/create")
-def create_person(payload: PersonRecord) -> Dict[str, Any]:
+def create_person(payload: PersonRecord, request: Request) -> Dict[str, Any]:
+    # Only Redline may create/edit/delete people
+    require_clearance(request, "Redline")
     people = load_people()
     if "id" not in payload or payload["id"] is None:
         payload["id"] = _next_person_id(people)
@@ -368,16 +425,15 @@ def create_person(payload: PersonRecord) -> Dict[str, Any]:
                 raise HTTPException(409, detail="A person with this ID already exists")
 
     payload.setdefault("created_by", "system")
-    # ✅ Full ISO datetime instead of date-only
     payload["last_updated"] = _now_iso()
 
     people.append(payload)
     save_people(people)
     return {"message": "created", "person": payload}
 
-
 @app.put("/api/update/{person_id}")
-def update_person(person_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+def update_person(person_id: str, payload: Dict[str, Any], request: Request) -> Dict[str, Any]:
+    require_clearance(request, "Redline")
     people = load_people()
     norm = _normalize_id_str(person_id)
     for idx, p in enumerate(people):
@@ -388,16 +444,15 @@ def update_person(person_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
                 updated["id"] = int(updated.get("id", p["id"]))
             except Exception:
                 updated["id"] = p["id"]
-            # ✅ Full ISO datetime instead of date-only
             updated["last_updated"] = _now_iso()
             people[idx] = updated
             save_people(people)
             return {"message": "updated", "person": updated}
     raise HTTPException(404, detail="Person not found")
 
-
 @app.delete("/api/delete/{person_id}")
-def delete_person(person_id: str) -> Dict[str, Any]:
+def delete_person(person_id: str, request: Request) -> Dict[str, Any]:
+    require_clearance(request, "Redline")
     people = load_people()
     norm = _normalize_id_str(person_id)
     new_people: List[PersonRecord] = []
@@ -415,6 +470,7 @@ def delete_person(person_id: str) -> Dict[str, Any]:
 # =======================
 #         INTEL
 # =======================
+# (Note: redeclare load_intel for legacy {"results": [...]} format if needed)
 def load_intel() -> List[IntelRecord]:
     data = _load_json(INTEL_PATH, {"results": []})
     if isinstance(data, dict) and isinstance(data.get("results"), list):
@@ -422,11 +478,15 @@ def load_intel() -> List[IntelRecord]:
     return data if isinstance(data, list) else []
 
 @app.get("/api/intel")
-def list_intel() -> Dict[str, List[IntelRecord]]:
-    return {"results": load_intel()}
+def list_intel(request: Request) -> Dict[str, List[IntelRecord]]:
+    user = require_clearance(request, "Operational")
+    items = load_intel()
+    visible = [r for r in items if can_view_record(user, r)]
+    return {"results": visible}
 
 @app.post("/api/intel")
-def create_intel(payload: IntelRecord) -> Dict[str, IntelRecord]:
+def create_intel(payload: IntelRecord, request: Request) -> Dict[str, IntelRecord]:
+    require_clearance(request, "Operational")
     items = load_intel()
     if "id" not in payload or payload["id"] is None:
         payload["id"] = _next_intel_id(items)
@@ -435,13 +495,13 @@ def create_intel(payload: IntelRecord) -> Dict[str, IntelRecord]:
             payload["id"] = int(payload["id"])
         except Exception:
             raise HTTPException(400, detail="ID must be an integer")
-
     items.append(payload)
     save_intel(items)
     return {"entry": payload}
 
 @app.put("/api/intel/{intel_id}")
-def update_intel(intel_id: str, payload: IntelRecord) -> Dict[str, IntelRecord]:
+def update_intel(intel_id: str, payload: IntelRecord, request: Request) -> Dict[str, IntelRecord]:
+    require_clearance(request, "Operational")
     items = load_intel()
     norm = _normalize_id_str(intel_id)
     for idx, r in enumerate(items):
@@ -457,9 +517,9 @@ def update_intel(intel_id: str, payload: IntelRecord) -> Dict[str, IntelRecord]:
             return {"entry": updated}
     raise HTTPException(404, detail="Intel not found")
 
-
 @app.delete("/api/intel/{intel_id}")
-def delete_intel(intel_id: str) -> Dict[str, Any]:
+def delete_intel(intel_id: str, request: Request) -> Dict[str, Any]:
+    require_clearance(request, "Operational")
     items = load_intel()
     norm = _normalize_id_str(intel_id)
     new_items: List[IntelRecord] = []
@@ -474,6 +534,18 @@ def delete_intel(intel_id: str) -> Dict[str, Any]:
     save_intel(new_items)
     return {"message": "deleted", "intel": deleted}
 
+@app.get("/api/intel/{intel_id}")
+def read_intel(intel_id: str, request: Request) -> Dict[str, Any]:
+    user = require_clearance(request, "Operational")
+    items = load_intel()
+    target = _normalize_id_str(intel_id)
+    for rec in items:
+        if _normalize_id_str(rec.get("id", "")) == target:
+            # enforce per-record classification on read
+            if not can_view_record(user, rec):
+                raise HTTPException(403, detail="Insufficient clearance for this file")
+            return {"entry": rec}
+    raise HTTPException(404, detail="Intel not found")
 
 # --- High Priority helpers (add-only) ---
 def _has_high_priority(rec: Dict[str, Any]) -> bool:
@@ -499,17 +571,21 @@ def _set_high_priority(rec: Dict[str, Any], value: bool) -> None:
     if "last_updated" in rec:
         rec["last_updated"] = _now_iso()
 
-
 @app.get("/api/high-priority")
-def get_high_priority() -> List[Dict[str, Any]]:
+def get_high_priority(request: Request) -> List[Dict[str, Any]]:
+    """
+    Minimal+ can view the combined high-priority feed,
+    but each entry is filtered by per-record visibility.
+    """
+    user = require_clearance(request, "Minimal")
     people = load_people()
     intel = load_intel()
 
     out: List[Dict[str, Any]] = []
 
-    # people
+    # people (filter by visibility)
     for p in (people or []):
-        if isinstance(p, dict) and _has_high_priority(p):
+        if isinstance(p, dict) and _has_high_priority(p) and can_view_record(user, p):
             out.append({
                 "id": p.get("id"),
                 "type": "person",
@@ -517,9 +593,9 @@ def get_high_priority() -> List[Dict[str, Any]]:
                 "flaggedAt": p.get("high_priority_at") or p.get("last_updated") or _now_iso(),
             })
 
-    # intel
+    # intel (filter by visibility)
     for i in (intel or []):
-        if isinstance(i, dict) and _has_high_priority(i):
+        if isinstance(i, dict) and _has_high_priority(i) and can_view_record(user, i):
             out.append({
                 "id": i.get("id"),
                 "type": "intel",
@@ -531,12 +607,13 @@ def get_high_priority() -> List[Dict[str, Any]]:
     out.sort(key=lambda r: r.get("flaggedAt", ""), reverse=True)
     return out
 
-
 @app.post("/api/people/{person_id}/priority")
-def set_person_priority(person_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
-    want = bool(body.get("high_priority", True))
+def set_person_priority(person_id: str, body: Dict[str, Any], request: Request) -> Dict[str, Any]:
+    # Editing people requires Redline
+    require_clearance(request, "Redline")
     items = load_people()
     target = _normalize_id_str(person_id)
+    want = bool(body.get("high_priority", True))
 
     for rec in items:
         if _normalize_id_str(rec.get("id", "")) == target:
@@ -548,12 +625,13 @@ def set_person_priority(person_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
 
     raise HTTPException(404, detail="Person not found")
 
-
 @app.post("/api/intel/{intel_id}/priority")
-def set_intel_priority(intel_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
-    want = bool(body.get("high_priority", True))
+def set_intel_priority(intel_id: str, body: Dict[str, Any], request: Request) -> Dict[str, Any]:
+    # Editing intel requires Operational+
+    require_clearance(request, "Operational")
     items = load_intel()
     target = _normalize_id_str(intel_id)
+    want = bool(body.get("high_priority", True))
 
     for rec in items:
         if _normalize_id_str(rec.get("id", "")) == target:
@@ -565,14 +643,4 @@ def set_intel_priority(intel_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
             save_intel(items)
             return {"intel": rec}
 
-    raise HTTPException(404, detail="Intel not found")
-
-
-@app.get("/api/intel/{intel_id}")
-def read_intel(intel_id: str) -> Dict[str, Any]:
-    items = load_intel()
-    target = _normalize_id_str(intel_id)
-    for rec in items:
-        if _normalize_id_str(rec.get("id", "")) == target:
-            return {"entry": rec}
     raise HTTPException(404, detail="Intel not found")
