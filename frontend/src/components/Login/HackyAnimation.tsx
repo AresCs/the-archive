@@ -2,19 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import "./HackyAnimation.css";
 
 type Props = {
-  durationMs?: number;      // how long to run the window show
-  onFinish?: () => void;    // called when sequence ends + layer is cleaned up
+  durationMs?: number;
+  onFinish?: () => void;
 };
 
 type WindowModel = {
   id: number;
   title: string;
-  lines: string[];     // full target lines
-  typed: string[];     // current typed contents per line
-  activeLine: number;  // which line is being typed
-  top: number;         // px
-  left: number;        // px
-  closing: boolean;    // being removed
+  lines: string[];
+  typed: string[];
+  activeLine: number;
+  top: number;  
+  left: number;   
+  closing: boolean;
 };
 
 const TITLES = [
